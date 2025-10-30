@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id          Int       @id @default(autoincrement())
+  nome        String
+  email       String    @unique
+  senha       String
+  tipoAcesso  String    // admin, operador, etc.
+  criadoEm    DateTime  @default(now())
+  movimentacoes MovimentacaoEstoque[]
+  producoes     Producao[]
+}
+
+model MateriaPrima {
+  id            Int       @id @default(autoincrement())
+  nome          String
+  loteNF        String    // número da nota fiscal (inserido manualmente)
+  quantidade    Float
+  unidade       String
+  dataEntrada   DateTime  @default(now())
+  usuarioId     Int
+  usuario       Usuario   @relation(fields: [usuarioId], references: [id])
+  movimentacoes MovimentacaoEstoque[]
+  producoes     ProducaoMateriaPrima[]
+}
+
+model Produto {
+  id            Int       @id @default(autoincrement())
+  nome          String
+  lotePadrao    String    // prefixo do lote (ex: "CAD" para cadeiras)
+  loteGerado    String    @unique // lote completo gerado automaticamente (ex: CAD001, CAD002...)
+  quantidade    Float
+  unidade       String
+  dataProducao  DateTime  @default(now())
+  usuarioId     Int
+  usuario       Usuario   @relation(fields: [usuarioId], references: [id])
+  movimentacoes MovimentacaoEstoque[]
+  producoes     Producao[]
+}
+
+model Producao {
+  id             Int       @id @default(autoincrement())
+  produtoId      Int
+  produto        Produto   @relation(fields: [produtoId], references: [id])
+  usuarioId      Int
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id])
+  dataProducao   DateTime  @default(now())
+  materiaPrimas  ProducaoMateriaPrima[]
+}
+
+model ProducaoMateriaPrima {
+  id              Int           @id @default(autoincrement())
+  producaoId      Int
+  materiaPrimaId  Int
+  quantidadeUsada Float
+  producao        Producao      @relation(fields: [producaoId], references: [id])
+  materiaPrima    MateriaPrima  @relation(fields: [materiaPrimaId], references: [id])
+}
+
+model MovimentacaoEstoque {
+  id             Int          @id @default(autoincrement())
+  tipo           String       // ENTRADA, SAIDA, USO
+  quantidade     Float
+  dataMovimento  DateTime     @default(now())
+  usuarioId      Int
+  usuario        Usuario      @relation(fields: [usuarioId], references: [id])
+  materiaPrimaId Int?
+  materiaPrima   MateriaPrima? @relation(fields: [materiaPrimaId], references: [id])
+  produtoId      Int?
+  produto        Produto?      @relation(fields: [produtoId], references: [id])
+}
