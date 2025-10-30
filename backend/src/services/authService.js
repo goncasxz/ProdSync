@@ -7,11 +7,11 @@ export class AuthService {
     }
 
     async register({ nome, email, senha, tipoAcesso }) {
-        const existe = await this.usuarioRepo.findByEmail(email);
+        const existe = await this.usuarioRepo.buscarUsuarioPorEmail(email);
         if (existe) throw new Error("E-mail já cadastrado.");
 
         const senhaHash = await hashPassword(senha);
-        const novo = await this.usuarioRepo.create({
+        const novo = await this.usuarioRepo.criarUsuario({
             nome,
             email,
             senha: senhaHash,
@@ -23,7 +23,7 @@ export class AuthService {
     }
 
     async login({ email, senha }) {
-        const user = await this.usuarioRepo.findByEmail(email);
+        const user = await this.usuarioRepo.buscarUsuarioPorEmail(email);
         if (!user) throw new Error("Usuário/senha inválidos.");
 
         const ok = await comparePassword(senha, user.senha);

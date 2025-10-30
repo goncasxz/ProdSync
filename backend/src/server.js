@@ -18,7 +18,7 @@ import { UsuarioRepository } from './repositories/UsuarioRepository.js'
 const usuarioRepo = new UsuarioRepository(prisma)
 const authService = new AuthService(usuarioRepo)
 
-app.use('/auth', createAuthRoutes({ authService }))
+app.use('/', createAuthRoutes({ authService }))
 
 import { authMiddleware } from './middleware/authMiddleware.js'
 app.get('/teste', authMiddleware, async (req, res) => {

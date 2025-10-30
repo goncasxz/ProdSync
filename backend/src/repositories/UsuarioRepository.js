@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma/index.js';
+import { PrismaClient } from '../../generated/prisma/index.js';
 const prisma = new PrismaClient();
 
 export class UsuarioRepository {
@@ -28,6 +28,12 @@ export class UsuarioRepository {
     async deletarUsuario(id) {
         return await prisma.usuario.delete({
             where: { id }
+        });
+    }
+
+    async buscarUsuarioPorEmail(email) {
+        return await prisma.usuario.findUnique({
+            where: { email }
         });
     }
 }
