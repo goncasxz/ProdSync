@@ -80,7 +80,7 @@ export default function DashboardProto() {
       {/* Topbar */}
       <header className="topbar">
         <div className="topbar-left">
-          <img src="  /Translot.png" className="brand-logo" alt="TRANSLOT" />
+          <img src="  /Translot.png" className="brand-logo" alt="ProdSync" />
           <div className="env-chip">Filial: MATRIZ</div>
         </div>
 
