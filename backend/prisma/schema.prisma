@@ -25,6 +25,7 @@ model MateriaPrima {
   lote          String
   quantidade    Int
   dataEntrada   DateTime              @default(now())
+  unidadeMedida String
   usuarioId     Int
   usuario       Usuario               @relation(fields: [usuarioId], references: [id])
   movimentacoes MovimentacaoEstoque[]

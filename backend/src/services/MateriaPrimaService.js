@@ -1,15 +1,19 @@
 export class MateriaPrimaService {
-    constructor(materiaPrimaRepo) {
+    constructor(materiaPrimaRepo, usuarioService) {
         this.materiaPrimaRepo = materiaPrimaRepo;
+        this.usuarioService = usuarioService;
     }
 
-    async criarMateriaPrima({ nome, descricao, quantidade, unidadeMedida }) {
-        if (!nome || !descricao || quantidade == null || !unidadeMedida) {
-            throw new Error("Todos os campos são obrigatórios.");
+    async criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId }) {
+        const usuario = await this.usuarioService.buscarUsuarioPorId(usuarioId);
+        if (!usuario) {
+            throw new Error("Usuário não encontrado.");
         }
-        const materiaPrima = await this.materiaPrimaRepo.criarMateriaPrima({ nome, descricao, quantidade, unidadeMedida });
+
+        const materiaPrima = await this.materiaPrimaRepo.criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId});
         return materiaPrima;
     }
+
     async buscarTodasMateriasPrimas() {
         return await this.materiaPrimaRepo.buscarMateriasPrimas();
     }

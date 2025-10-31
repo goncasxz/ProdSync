@@ -2,12 +2,12 @@ export function makeMateriaPrimaController({ materiaPrimaService }) {
     return {
         criarMateriaPrima: async (req, res) => {
             try {
-                const { nome, descricao, quantidade, unidadeMedida } = req.body || {};
-                if (!nome || !descricao || quantidade == null || !unidadeMedida) {
+                const { nome, quantidade, unidadeMedida, lote, usuarioId} = req.body || {};
+                if (!nome || quantidade == null || !unidadeMedida || !lote || usuarioId == null) {
                     return res.status(400).json({ ok: false, error: "Todos os campos são obrigatórios." });
                 }
 
-                const materiaPrima = await materiaPrimaService.criarMateriaPrima({ nome, descricao, quantidade, unidadeMedida });
+                const materiaPrima = await materiaPrimaService.criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId });
                 res.status(201).json({ ok: true, materiaPrima });
             } catch (err) {
                 res.status(400).json({ ok: false, error: err.message });

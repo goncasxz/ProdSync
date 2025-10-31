@@ -5,8 +5,8 @@ export function createAuthRoutes({ authService }) {
   const router = express.Router();
   const controller = makeAuthController({ authService });
 
-  router.post("/auth/register", controller.register);
-  router.post("/auth/login", controller.login);
+  router.post("/register", controller.register);
+  router.post("/login", controller.login);
 
   return router;
 }

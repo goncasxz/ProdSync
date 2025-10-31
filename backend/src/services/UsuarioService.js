@@ -1,3 +1,6 @@
+import { hash } from "bcryptjs";
+import { hashPassword } from "../utils/bcrypt.js";
+
 export class UsuarioService {
     constructor(usuarioRepo) {
         this.usuarioRepo = usuarioRepo;
@@ -12,8 +15,9 @@ export class UsuarioService {
         if (existe) {
             throw new Error("E-mail já cadastrado.");
         }
+        const senhaHash = await hashPassword(senha);
 
-        const usuario = await this.usuarioRepo.criarUsuario({ nome, email, senha, tipoAcesso });
+        const usuario = await this.usuarioRepo.criarUsuario({ nome, email, senha: senhaHash, tipoAcesso });
         return usuario;
     }
 
