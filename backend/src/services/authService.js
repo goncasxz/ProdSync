@@ -15,7 +15,7 @@ export class AuthService {
             nome,
             email,
             senha: senhaHash,
-            tipoAcesso
+            tipoAcesso: "USER"
         });
 
         const token = generateToken({ id: novo.id, email: novo.email, tipoAcesso: novo.tipoAcesso });

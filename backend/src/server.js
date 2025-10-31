@@ -38,11 +38,5 @@ app.use('/usuarios', createUsuarioRoutes({ usuarioService }));
 app.use('/produtos', createProdutoRoutes({ produtoService }));
 app.use('/materias-primas', createMateriaPrimaRoutes({ materiaPrimaService }));
 
-import { authMiddleware } from './middleware/authMiddleware.js';
-app.get('/teste', authMiddleware, async (req, res) => {
-    const usuarios = await prisma.usuario.findMany();
-    res.json({ status: 'OK', usuarios });
-});
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));

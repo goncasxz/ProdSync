@@ -2,10 +2,10 @@ export function makeAuthController({ authService }) {
     return {
         register: async (req, res) => {
             try {
-                const { nome, email, senha, tipoAcesso } = req.body || {};
-                if (!nome || !email || !senha || !tipoAcesso)
+                const { nome, email, senha } = req.body || {};
+                if (!nome || !email || !senha)
                     return res.status(400).json({ ok: false, error: "Campos obrigatórios ausentes." });
-                const out = await authService.register({ nome, email, senha, tipoAcesso });
+                const out = await authService.register({ nome, email, senha });
                 res.status(201).json({ ok: true, ...out });
             } catch (err) {
                 res.status(400).json({ ok: false, error: err.message });
