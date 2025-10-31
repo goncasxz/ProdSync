@@ -5,15 +5,6 @@ export class ProdutoService {
     }
 
     async criarProduto({ nome, quantidade, dataProducao, usuarioId }) {
-        if (!nome || quantidade == null || !usuarioId) {
-            throw new Error("Nome, quantidade e usuário são obrigatórios.");
-        }
-
-        const usuario = await this.usuarioService.buscarUsuarioPorId(usuarioId);
-        if (!usuario) {
-            throw new Error("Usuário associado não encontrado.");
-        }
-
         const random = Math.floor(1000 + Math.random() * 9000);
         const data = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const lote = `PROD-${data}-${random}`;

@@ -4,12 +4,7 @@ export class MateriaPrimaService {
         this.usuarioService = usuarioService;
     }
 
-    async criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId }) {
-        const usuario = await this.usuarioService.buscarUsuarioPorId(usuarioId);
-        if (!usuario) {
-            throw new Error("Usuário não encontrado.");
-        }
-
+    async criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId}) {
         const materiaPrima = await this.materiaPrimaRepo.criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId});
         return materiaPrima;
     }

@@ -2,8 +2,9 @@ export function makeMateriaPrimaController({ materiaPrimaService }) {
     return {
         criarMateriaPrima: async (req, res) => {
             try {
-                const { nome, quantidade, unidadeMedida, lote, usuarioId} = req.body || {};
-                if (!nome || quantidade == null || !unidadeMedida || !lote || usuarioId == null) {
+                const { nome, quantidade, unidadeMedida, lote} = req.body || {};
+                const usuarioId = req.user.id;
+                if (!nome || quantidade == null || !unidadeMedida || !lote) {
                     return res.status(400).json({ ok: false, error: "Todos os campos são obrigatórios." });
                 }
 

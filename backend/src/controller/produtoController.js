@@ -2,7 +2,11 @@ export function makeProdutoController({ produtoService }) {
     return {
         criarProduto: async (req, res) => {
             try {
-                const { nome, quantidade, dataProducao, usuarioId } = req.body;
+                const { nome, quantidade, dataProducao} = req.body;
+                const usuarioId = req.user.id;
+                if (!nome || quantidade == null || !dataProducao) {
+                    return res.status(400).json({ ok: false, error: "Todos os campos são obrigatórios." });
+                }
                 const produto = await produtoService.criarProduto({ nome, quantidade, dataProducao, usuarioId });
                 res.status(201).json({ ok: true, produto });
             } catch (err) {
