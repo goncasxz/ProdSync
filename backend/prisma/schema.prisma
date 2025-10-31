@@ -22,7 +22,7 @@ model Usuario {
 model MateriaPrima {
   id            Int                   @id @default(autoincrement())
   nome          String
-  lote          String // Número da NF usado como lote (inserido manualmente)
+  lote          String
   quantidade    Int
   dataEntrada   DateTime              @default(now())
   usuarioId     Int
@@ -34,7 +34,7 @@ model MateriaPrima {
 model Produto {
   id            Int                   @id @default(autoincrement())
   nome          String
-  lote          String // Gerado automaticamente com base no tipo
+  lote          String
   quantidade    Int
   dataProducao  DateTime              @default(now())
   usuarioId     Int
