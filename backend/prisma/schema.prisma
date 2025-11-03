@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id             Int                   @id @default(autoincrement())
+  nome           String
+  email          String                @unique
+  senha          String
+  tipoAcesso     String
+  materiasPrimas MateriaPrima[]
+  produtos       Produto[]
+  movimentacoes  MovimentacaoEstoque[]
+}
+
+model MateriaPrima {
+  id            Int                   @id @default(autoincrement())
+  nome          String
+  lote          String
+  quantidade    Int
+  dataEntrada   DateTime              @default(now())
+  unidadeMedida String
+  usuarioId     Int
+  usuario       Usuario               @relation(fields: [usuarioId], references: [id])
+  movimentacoes MovimentacaoEstoque[]
+  producoes     Producao[]
+}
+
+model Produto {
+  id            Int                   @id @default(autoincrement())
+  nome          String
+  lote          String
+  quantidade    Int
+  dataProducao  DateTime              @default(now())
+  usuarioId     Int
+  usuario       Usuario               @relation(fields: [usuarioId], references: [id])
+  movimentacoes MovimentacaoEstoque[]
+  producoes     Producao[]
+}
+
+model Producao {
+  id              Int          @id @default(autoincrement())
+  materiaPrimaId  Int
+  produtoId       Int
+  quantidadeUsada Int
+  dataProducao    DateTime     @default(now())
+  materiaPrima    MateriaPrima @relation(fields: [materiaPrimaId], references: [id])
+  produto         Produto      @relation(fields: [produtoId], references: [id])
+}
+
+model MovimentacaoEstoque {
+  id             Int           @id @default(autoincrement())
+  tipo           String
+  quantidade     Int
+  data           DateTime      @default(now())
+  usuarioId      Int
+  usuario        Usuario       @relation(fields: [usuarioId], references: [id])
+  materiaPrimaId Int?
+  produtoId      Int?
+  materiaPrima   MateriaPrima? @relation(fields: [materiaPrimaId], references: [id])
+  produto        Produto?      @relation(fields: [produtoId], references: [id])
+}
