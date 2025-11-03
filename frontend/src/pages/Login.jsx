@@ -30,7 +30,7 @@ async function onSubmit(e) {
         <header className="login-head">
           <div className="brand-mark">◆</div>
           <div>
-            <h1 className="title">Translot</h1>
+            <h1 className="title">ProdSync</h1>
             <p className="subtitle">Por favor se identifique</p>
           </div>
         </header>
