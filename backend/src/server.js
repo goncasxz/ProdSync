@@ -3,9 +3,19 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '../generated/prisma/index.js';
 
+
 dotenv.config();
 const app = express();
-app.use(cors());
+
+const allowed = (process.env.CORS_ORIGINS || "").split(",").map(s => s.trim()).filter(Boolean);
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowed.length === 0 || allowed.includes(origin)) return cb(null, true);
+    cb(new Error("CORS not allowed"));
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 const prisma = new PrismaClient();
