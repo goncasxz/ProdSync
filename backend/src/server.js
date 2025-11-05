@@ -47,6 +47,8 @@ app.use('/auth', createAuthRoutes({ authService }));
 app.use('/usuarios', createUsuarioRoutes({ usuarioService }));
 app.use('/produtos', createProdutoRoutes({ produtoService }));
 app.use('/materias-primas', createMateriaPrimaRoutes({ materiaPrimaService }));
+app.get("/ping", (req, res) => res.json({ ok: true, msg: "Backend ativo" }));
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
