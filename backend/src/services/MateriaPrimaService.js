@@ -1,7 +1,6 @@
 export class MateriaPrimaService {
-    constructor(materiaPrimaRepo, usuarioService) {
+    constructor(materiaPrimaRepo) {
         this.materiaPrimaRepo = materiaPrimaRepo;
-        this.usuarioService = usuarioService;
     }
 
     async criarMateriaPrima({ nome, quantidade, unidadeMedida, lote, usuarioId}) {
