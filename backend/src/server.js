@@ -35,8 +35,8 @@ import { MateriaPrimaService } from './services/MateriaPrimaService.js';
 
 const authService = new AuthService(usuarioRepo);
 const usuarioService = new UsuarioService(usuarioRepo);
-const produtoService = new ProdutoService(produtoRepo, usuarioService);
-const materiaPrimaService = new MateriaPrimaService(materiaPrimaRepo, usuarioService);
+const produtoService = new ProdutoService(produtoRepo);
+const materiaPrimaService = new MateriaPrimaService(materiaPrimaRepo);
 
 import { createAuthRoutes } from './routes/authRoute.js';
 import { createUsuarioRoutes } from './routes/usuarioRoute.js';

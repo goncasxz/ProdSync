@@ -1,7 +1,6 @@
 export class ProdutoService {
-    constructor(produtoRepo, usuarioService) {
+    constructor(produtoRepo) {
         this.produtoRepo = produtoRepo;
-        this.usuarioService = usuarioService;
     }
 
     async criarProduto({ nome, quantidade, dataProducao, usuarioId }) {
