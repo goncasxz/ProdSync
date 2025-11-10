@@ -1,31 +1,60 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+// src/context/AuthContext.jsx
+import React, { createContext, useContext, useState } from "react";
+import { api } from "../services/api"; // seu axios configurado com baseURL do backend
 
-const AuthContext = createContext(null);
-export function useAuth() { return useContext(AuthContext); }
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("demo_user");
-    if (saved) setUser(JSON.parse(saved));
-  }, []);
-
-  const login = async (email, password) => {
-    if (email === "admin@demo.com" && password === "123456") {
-      const u = { email };
-      setUser(u);
-      localStorage.setItem("demo_user", JSON.stringify(u));
-      return { ok: true };
+  // Estado do usuário
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("translot_user"));
+    } catch {
+      return null;
     }
-    return { ok: false, error: "Credenciais inválidas" };
-  };
+  });
 
-  const logout = () => {
+  // Loading global do auth
+  const [loading, setLoading] = useState(false);
+
+  // Login
+  async function login(email, password) {
+    setLoading(true);
+    try {
+      const res = await api.post("/auth/login", { email, password });
+
+      if (res.data.token) {
+        const user = { ...res.data.usuario, token: res.data.token };
+        setUser(user);
+        localStorage.setItem("translot_user", JSON.stringify(user));
+        setLoading(false);
+        return { ok: true };
+      } else {
+        setUser(null);
+        setLoading(false);
+        return { ok: false, error: "Usuário ou senha incorretos" };
+      }
+    } catch (err) {
+      setUser(null);
+      setLoading(false);
+      return { ok: false, error: err.response?.data?.error || err.message };
+    }
+  }
+
+  // Logout
+  function logout() {
     setUser(null);
-    localStorage.removeItem("demo_user");
-  };
+    localStorage.removeItem("translot_user");
+  }
 
-  const value = useMemo(() => ({ user, login, logout }), [user]);
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// Hook para consumir o AuthContext
+export function useAuth() {
+  return useContext(AuthContext);
 }
