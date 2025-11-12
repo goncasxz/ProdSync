@@ -15,7 +15,8 @@ model Usuario {
   senha          String
   tipoAcesso     String
   materiasPrimas MateriaPrima[]
-  produtos       Produto[]
+  produtos       Produto[]             @relation("UsuarioProdutos") // relação nomeada
+  producoes      Producao[]            @relation("UsuarioProducoes") // relação nomeada
   movimentacoes  MovimentacaoEstoque[]
 }
 
@@ -35,11 +36,9 @@ model MateriaPrima {
 model Produto {
   id            Int                   @id @default(autoincrement())
   nome          String
-  lote          String
   quantidade    Int
-  dataProducao  DateTime              @default(now())
   usuarioId     Int
-  usuario       Usuario               @relation(fields: [usuarioId], references: [id])
+  usuario       Usuario               @relation("UsuarioProdutos", fields: [usuarioId], references: [id])
   movimentacoes MovimentacaoEstoque[]
   producoes     Producao[]
 }
@@ -49,6 +48,9 @@ model Producao {
   materiaPrimaId  Int
   produtoId       Int
   quantidadeUsada Int
+  lote            String
+  usuarioId       Int
+  usuario         Usuario      @relation("UsuarioProducoes", fields: [usuarioId], references: [id])
   dataProducao    DateTime     @default(now())
   materiaPrima    MateriaPrima @relation(fields: [materiaPrimaId], references: [id])
   produto         Produto      @relation(fields: [produtoId], references: [id])

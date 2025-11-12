@@ -3,16 +3,14 @@ export class ProdutoService {
         this.produtoRepo = produtoRepo;
     }
 
-    async criarProduto({ nome, quantidade, dataProducao, usuarioId }) {
-        const random = Math.floor(1000 + Math.random() * 9000);
-        const data = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const lote = `PROD-${data}-${random}`;
+    async criarProduto({ nome, quantidade, usuarioId }) {
+        if (!nome || quantidade == null) {
+            throw new Error("Nome e quantidade são obrigatórios.");
+        }
 
         const produto = {
             nome,
-            lote,
             quantidade,
-            dataProducao: dataProducao || new Date(),
             usuarioId
         };
 
@@ -34,7 +32,7 @@ export class ProdutoService {
     async atualizarProduto(id, dadosAtualizados) {
         if (!id) throw new Error("ID do produto é obrigatório.");
         if (!dadosAtualizados || Object.keys(dadosAtualizados).length === 0) {
-            throw new Error("Dados para atualização não podem ser vazios.");
+        throw new Error("Dados para atualização não podem ser vazios.");
         }
 
         const produto = await this.produtoRepo.buscarProdutoPorId(id);
@@ -50,13 +48,5 @@ export class ProdutoService {
         if (!produto) throw new Error("Produto não encontrado.");
 
         return await this.produtoRepo.deletarProduto(id);
-    }
-
-    async buscarProdutoPorLote(lote) {
-        if (!lote) throw new Error("Lote é obrigatório.");
-
-        const produto = await this.produtoRepo.buscarProdutoPorLote(lote);
-        if (!produto) throw new Error("Produto não encontrado para o lote especificado.");
-        return produto;
     }
 }
