@@ -6,10 +6,10 @@ export class ProducaoService {
   }
 
   async produzir({ produtoId, quantidadeProduzida, materiasPrimas, usuarioId }) {
-
     if (!produtoId || quantidadeProduzida == null || !Array.isArray(materiasPrimas) || materiasPrimas.length === 0) {
       throw new Error('produtoId, quantidadeProduzida e materiasPrimas são obrigatórios.');
     }
+
     if (quantidadeProduzida <= 0) throw new Error('quantidadeProduzida deve ser maior que zero.');
 
     for (const it of materiasPrimas) {

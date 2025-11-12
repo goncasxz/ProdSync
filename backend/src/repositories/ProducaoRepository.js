@@ -38,6 +38,10 @@ export class ProducaoRepository {
         data: { quantidade: { increment: quantidadeProduzida } }
       });
 
+      const random = Math.floor(1000 + Math.random() * 9000);
+      const data = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const lote = `PROD-${data}-${random}`;
+
       const producoesCriadas = [];
       for (const item of materiasPrimas) {
         const rec = await tx.producao.create({
@@ -45,18 +49,22 @@ export class ProducaoRepository {
             materiaPrimaId: item.id,
             produtoId,
             quantidadeUsada: item.quantidadeUsada,
-            usuarioId
+            usuarioId,
+            lote
           }
         });
         producoesCriadas.push(rec);
       }
-      const resposta = {
+
+      return {
         ok: true,
+        lote,
         produtoAtualizado: {
           id: produtoAtualizado.id,
           nome: produtoAtualizado.nome,
           novaQuantidade: produtoAtualizado.quantidade
         },
+
         materiasPrimasUsadas: mpRecords.map(mp => {
           const usado = materiasPrimas.find(i => i.id === mp.id);
           return {
@@ -69,8 +77,6 @@ export class ProducaoRepository {
         }),
         producoes: producoesCriadas
       };
-
-      return resposta;
     });
   }
 
@@ -79,7 +85,8 @@ export class ProducaoRepository {
       orderBy: { dataProducao: 'desc' },
       include: {
         produto: true,
-        materiaPrima: true
+        materiaPrima: true,
+        usuario: { select: { id: true, nome: true, email: true } }
       }
     });
   }
@@ -87,9 +94,11 @@ export class ProducaoRepository {
   async findByProdutoId(produtoId) {
     return await prisma.producao.findMany({
       where: { produtoId },
+      orderBy: { dataProducao: 'desc' },
       include: {
         produto: true,
-        materiaPrima: true
+        materiaPrima: true,
+        usuario: { select: { id: true, nome: true, email: true } }
       }
     });
   }
