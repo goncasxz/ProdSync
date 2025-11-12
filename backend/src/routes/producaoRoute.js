@@ -1,5 +1,5 @@
 import express from 'express';
-import { makeProducaoController } from '../controller/producaoControler.js';
+import { makeProducaoController } from '../controller/producaoController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
 export function createProducaoRoutes({ producaoService }) {
