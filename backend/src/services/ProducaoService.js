@@ -43,4 +43,16 @@ export class ProducaoService {
   async listarProducoesPorProduto(produtoId) {
     return await this.producaoRepo.findByProdutoId(produtoId);
   }
+
+  async listarPorLote(lote) {
+    if (!lote || typeof lote !== 'string') {
+      throw new Error('Lote inválido.');
+    }
+
+    const producoes = await this.producaoRepo.findByLote(lote);
+    if (producoes.length === 0) throw new Error('Nenhuma produção encontrada para este lote.');
+
+    return producoes;
+}
+
 }

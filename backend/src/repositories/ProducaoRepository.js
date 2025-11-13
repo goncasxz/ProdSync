@@ -82,7 +82,8 @@ export class ProducaoRepository {
           materiasPrimasUsadas: materiasPrimas.map(mp => ({
             id: mp.id,
             nome: mpRecords.find(r => r.id === mp.id).nome,
-            quantidadeUsada: mp.quantidadeUsada
+            quantidadeUsada: mp.quantidadeUsada,
+            lote: mp.lote
           }))
         }
       };
@@ -115,4 +116,22 @@ export class ProducaoRepository {
       }
     });
   }
+
+  async findByLote(lote) {
+  return await prisma.producao.findMany({
+    where: { lote },
+    include: {
+      produto: true,
+      usuario: { select: { id: true, nome: true, email: true } },
+      materiasPrimasUsadas: {
+        include: {
+          materiaPrima: true
+        }
+      }
+    }
+  });
 }
+
+}
+
+
