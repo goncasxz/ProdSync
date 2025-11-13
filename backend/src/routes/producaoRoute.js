@@ -9,7 +9,7 @@ export function createProducaoRoutes({ producaoService }) {
   router.post('/', authMiddleware, controller.produzir);
   router.get('/', authMiddleware, controller.listarProducoes);
   router.get('/produto/:produtoId', authMiddleware, controller.listarPorProduto);
-  router.get('/producao/lote/:lote', authMiddleware, controller.listarPorLote);
+  router.get('/lote/:lote', authMiddleware, controller.listarPorLote);
 
 
   return router;
