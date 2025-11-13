@@ -30,7 +30,7 @@ model MateriaPrima {
   usuarioId     Int
   usuario       Usuario               @relation(fields: [usuarioId], references: [id])
   movimentacoes MovimentacaoEstoque[]
-  producoes     Producao[]
+  producoesUsos ProducaoMateriaPrima[]
 }
 
 model Produto {
@@ -44,16 +44,25 @@ model Produto {
 }
 
 model Producao {
-  id              Int          @id @default(autoincrement())
+  id                  Int                     @id @default(autoincrement())
+  produtoId           Int
+  quantidadeProduzida Int
+  lote                String
+  usuarioId           Int
+  usuario             Usuario                 @relation("UsuarioProducoes", fields: [usuarioId], references: [id])
+  dataProducao        DateTime                @default(now())
+  produto             Produto                 @relation(fields: [produtoId], references: [id])
+  materiasPrimasUsadas ProducaoMateriaPrima[]
+}
+
+model ProducaoMateriaPrima {
+  id              Int           @id @default(autoincrement())
+  producaoId      Int
   materiaPrimaId  Int
-  produtoId       Int
   quantidadeUsada Int
-  lote            String
-  usuarioId       Int
-  usuario         Usuario      @relation("UsuarioProducoes", fields: [usuarioId], references: [id])
-  dataProducao    DateTime     @default(now())
-  materiaPrima    MateriaPrima @relation(fields: [materiaPrimaId], references: [id])
-  produto         Produto      @relation(fields: [produtoId], references: [id])
+
+  producao        Producao      @relation(fields: [producaoId], references: [id])
+  materiaPrima    MateriaPrima  @relation(fields: [materiaPrimaId], references: [id])
 }
 
 model MovimentacaoEstoque {
