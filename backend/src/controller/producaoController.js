@@ -60,6 +60,19 @@ export function makeProducaoController({ producaoService }) {
       } catch (err) {
         return res.status(400).json({ ok: false, error: err.message });
       }
+    },
+
+    listarPorLote: async (req, res) => {
+      try {
+        const lote = req.params.lote;
+        if (!lote) return res.status(400).json({ ok: false, error: 'Lote não informado.' });
+
+        const producoes = await producaoService.listarPorLote(lote);
+        return res.json({ ok: true, producoes });
+      } catch (err) {
+        return res.status(400).json({ ok: false, error: err.message });
+      }
     }
+
   };
 }
