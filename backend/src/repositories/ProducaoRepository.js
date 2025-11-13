@@ -118,18 +118,18 @@ export class ProducaoRepository {
   }
 
   async findByLote(lote) {
-  return await prisma.producao.findMany({
-    where: { lote },
-    include: {
-      produto: true,
-      usuario: { select: { id: true, nome: true, email: true } },
-      materiasPrimasUsadas: {
-        include: {
-          materiaPrima: true
+    return await prisma.producao.findMany({
+      where: { lote },
+      include: {
+        produto: true,
+        usuario: { select: { id: true, nome: true, email: true } },
+        materiasPrimasUsadas: {
+          include: {
+            materiaPrima: true
+          }
         }
       }
-    }
-  });
+    });
 }
 
 }
