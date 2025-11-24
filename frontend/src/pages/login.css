@@ -1,33 +1,36 @@
 /* --------- tema dark empresarial --------- */
-:root{
-  --bg-0:#0b0b0c;
-  --bg-1:#0f0f10;
-  --panel-0:#141416;
-  --panel-1:#1b1c1f;
-  --border:#2a2a2d;
-  --text:#e7e7ea;
-  --muted:#a2a6ad;
-  --primary:#2563eb;         /* azul corporativo */
-  --primary-2:#1d4ed8;
-  --ring:rgba(37,99,235,.35);
-  --err-bg:#b91c1c33;
-  --err-fg:#fca5a5;
+:root {
+  --bg-0: #0b0b0c;
+  --bg-1: #0f0f10;
+  --panel-0: #141416;
+  --panel-1: #1b1c1f;
+  --border: #2a2a2d;
+  --text: #e7e7ea;
+  --muted: #a2a6ad;
+  --primary: #2563eb;
+  --primary-2: #1d4ed8;
+  --ring: rgba(37, 99, 235, 0.35);
+  --err-bg: #b91c1c33;
+  --err-fg: #fca5a5;
 }
 
-html,body,#root{height:100%}
-body{
-  margin:0;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  color:var(--text);
-  background:var(--bg-0);
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
 
-/* fundo e centralização */
-/* fundo e centralização (tela cheia garantida) */
-.login-bg-dark{
-  position: fixed;         /* ocupa a viewport inteira */
-  inset: 0;                /* top/right/bottom/left = 0 */
-  display: flex;           /* centraliza o card */
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+  color: var(--text);
+  background: var(--bg-0);
+  overflow: hidden; /* impede scroll deslocando o card */
+}
+
+/* fundo da tela */
+.login-bg-dark {
+  position: fixed;
+  inset: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
@@ -38,74 +41,153 @@ body{
     linear-gradient(180deg, var(--bg-0), var(--bg-1));
 }
 
-
-/* card */
-.login-card-dark{
-  width:100%;
-  max-width:420px;
+/* card central */
+.login-card-dark {
+  width: 100%;
+  max-width: 420px;
   background: linear-gradient(180deg, rgba(32,32,36,.9), rgba(22,22,24,.9));
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:28px 26px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 26px;
   box-shadow: 0 18px 60px rgba(0,0,0,.55);
+  box-sizing: border-box;
+  overflow: hidden; /* segura tudo dentro */
 }
 
-/* topo do card */
-.login-head{
-  display:flex; gap:12px; align-items:center; margin-bottom:18px;
+/* topo */
+.login-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
 }
-.brand-mark{
-  width:40px; height:40px; border-radius:12px;
-  display:grid; place-items:center;
-  background:linear-gradient(135deg,#0f172a,#334155);
-  color:white; font-weight:700; box-shadow:0 8px 28px rgba(2,6,23,.35);
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #0f172a, #334155);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 8px 28px rgba(2,6,23,0.35);
 }
-.title{margin:0; font-size:22px; font-weight:700;}
-.subtitle{margin:2px 0 0; font-size:13px; color:var(--muted);}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
 
 /* alertas */
-.alert{
-  border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:14px;
+.alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 14px;
 }
-.alert.error{ background:var(--err-bg); color:var(--err-fg); }
+
+.alert.error {
+  background: var(--err-bg);
+  color: var(--err-fg);
+}
 
 /* formulário */
-.form{ display:grid; gap:16px; }
-.field{ display:grid; gap:8px; }
-.label{ font-size:12px; color:var(--muted); }
-
-input{
-  width:100%; padding:12px 14px;
-  border-radius:12px; border:1px solid var(--border);
-  background: #0f1113; color:var(--text); font-size:14px;
-  transition: box-shadow .2s, border-color .2s, transform .02s;
-}
-input:focus{
-  outline:none;
-  border-color:transparent;
-  box-shadow: 0 0 0 4px var(--ring);
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
 }
 
-/* ação abaixo do campo (mostrar/ocultar) */
-.inline-actions{ display:flex; }
-.inline-actions.right{ justify-content:flex-end; }
-.link{
-  background:none; border:none; color:var(--muted); cursor:pointer;
-  padding:0;
+/* campo */
+.field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
-.link:hover{ color:var(--primary); }
-.tiny{ font-size:12px; }
+
+/* label */
+.label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* inputs */
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px; /* melhor proporção */
+  border: 1px solid var(--border);
+  background: #0f1113;
+  color: var(--text);
+  font-size: 14px;
+  box-sizing: border-box; /* evita overflow */
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.02s;
+}
+
+input:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+/* ação abaixo do campo */
+.inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.link:hover {
+  color: var(--primary);
+}
+
+.tiny {
+  font-size: 12px;
+}
 
 /* botão principal */
-.btn{
-  appearance:none; border:0; border-radius:12px;
-  padding:12px 14px; font-weight:700; cursor:pointer;
-  transition: background .2s, transform .04s;
+.btn {
+  appearance: none;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.04s;
+  width: 100%;
 }
-.btn.primary{ background:var(--primary); color:#fff; }
-.btn.primary:hover{ background:var(--primary-2); }
-.btn:active{ transform:translateY(1px); }
-.btn:disabled{ opacity:.6; cursor:not-allowed; }
 
-/* dica */
-.hint{ margin-top:4px; font-size:12px; color:var(--muted); text-align:center; }
+.btn.primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn.primary:hover {
+  background: var(--primary-2);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

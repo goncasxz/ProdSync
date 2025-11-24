@@ -1,29 +1,26 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
 export default function Login() {
-  const { login, loading } = useAuth(); // pega o login do contexto
+  const { login } = useAuth();
   const nav = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
-
-    const res = await login(email, password); // chama o login do backend
-
-    if (res.ok) {
-      nav("/painel"); // redireciona para o dashboard
-    } else {
-      setError(res.error || "Erro ao autenticar");
-    }
+    setLoading(true);
+    const res = await login(email, password);
+    setLoading(false);
+    if (res.ok) nav("/painel");
+    else setError(res.error || "Erro ao autenticar");
   }
 
   return (

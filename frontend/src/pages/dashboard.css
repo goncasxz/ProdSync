@@ -59,8 +59,17 @@ body { margin:0; background:var(--bg); color:var(--text);
 .side-search input:focus { box-shadow:0 0 0 3px rgba(37,99,235,.25); border-color:transparent; }
 
 .side-list { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:8px; }
-.side-item { display:grid; grid-template-columns: 24px 1fr auto; gap:10px; align-items:center;
-  background: #15161a; border:1px solid var(--line); border-radius:12px; padding:10px; }
+.side-item {
+  display: grid;
+  grid-template-columns: 1fr auto; /* apenas 2 colunas agora */
+  gap: 12px;
+  align-items: center;
+
+  background: #15161a;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+}
 
 .star-btn { background:none; border:none; color:#475569; font-size:16px; cursor:pointer; }
 .star-btn.active { color:#fbbf24; }
@@ -226,7 +235,8 @@ body { margin:0; background:var(--bg); color:var(--text);
 
   /* limita a 2 linhas, com ‘…’ se passar */
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 1;           /* padrão sugerido */
+-webkit-line-clamp: 1;   /* necessário para Chrome/Safari */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -408,4 +418,167 @@ body { margin:0; background:var(--bg); color:var(--text);
 @media (max-width: 900px){
   .form-grid.form-produto{ grid-template-columns: 1fr; }
   .t-prod-head, .t-prod-row{ grid-template-columns: 1fr 1fr; }
+}
+
+.topbar-right {
+  margin-left: auto;       /* EMPURRA pro canto direito */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ================== TEMA ESCURO / CLARO ================== */
+
+/* Tema escuro (padrão) */
+.dash-root.theme-dark {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+/* Tema claro */
+.dash-root.theme-light {
+  background: #f3f4f6;
+  color: #0f172a;
+}
+
+/* Topbar */
+.theme-dark .topbar {
+  background: #020617;
+  border-bottom: 1px solid #1e293b;
+}
+
+.theme-light .topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Lateral + rail */
+.theme-dark .rail {
+  background: #020617;
+  border-right: 1px solid #1f2937;
+}
+
+.theme-light .rail {
+  background: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.theme-dark .side {
+  background: #020617;
+  border-right: 1px solid #1f2937;
+}
+
+.theme-light .side {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+}
+
+/* Conteúdo */
+.theme-dark .content {
+  background: #020617;
+}
+
+.theme-light .content {
+  background: #f9fafb;
+}
+
+/* Cards / painéis */
+.theme-dark .panel,
+.theme-dark .recent-card,
+.theme-dark .modal-window {
+  background: #020617;
+  border: 1px solid #1e293b;
+}
+
+.theme-light .panel,
+.theme-light .recent-card,
+.theme-light .modal-window {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+/* Botões padrão se adaptam melhor */
+.theme-light .btn,
+.theme-light .ghost-btn {
+  border-radius: 6px;
+}
+
+/* ================== CONFIG / THEME ================== */
+
+.config-title {
+  margin-top: 0;
+  margin-bottom: 4px;
+  font-size: 1.1rem;
+}
+
+.config-subtitle {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.theme-options {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.theme-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.2s ease;
+}
+
+.theme-card:hover {
+  transform: translateY(-1px);
+  border-color: #6366f1;
+}
+
+.theme-card.active {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
+}
+
+.theme-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 2px solid #6366f1;
+}
+
+.theme-dot-dark {
+  background: linear-gradient(135deg, #020617, #0f172a);
+}
+
+.theme-dot-light {
+  background: linear-gradient(135deg, #f9fafb, #e5e7eb);
+}
+
+.theme-card-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.theme-card-desc {
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+.config-hint {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  opacity: 0.7;
 }
