@@ -5,20 +5,25 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("translot_user");
-    if (saved) {
+    try {
+      const saved = localStorage.getItem("translot_user");
+      if (!saved) return null;
       const parsed = JSON.parse(saved);
       if (!isTokenExpired(parsed.token)) return parsed;
+      return null;
+    } catch {
+      return null;
     }
-    return null;
   });
 
   useEffect(() => {
+    // Checa token expirado a cada minuto
     const interval = setInterval(() => {
       if (user && isTokenExpired(user.token)) {
         logout();
       }
-    }, 1000 * 60); // checa a cada minuto
+    }, 60_000);
+
     return () => clearInterval(interval);
   }, [user]);
 
@@ -31,6 +36,7 @@ export function AuthProvider({ children }) {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         setUser(data);
         localStorage.setItem("translot_user", JSON.stringify(data));
@@ -46,7 +52,7 @@ export function AuthProvider({ children }) {
   function logout() {
     setUser(null);
     localStorage.removeItem("translot_user");
-    // opcional: dispara evento global para api.js
+    // Notifica api.js que o token expirou
     window.dispatchEvent(new Event("logout"));
   }
 
