@@ -1,60 +1,74 @@
-// src/context/AuthContext.jsx
-import React, { createContext, useContext, useState } from "react";
-import { api } from "../services/api"; // seu axios configurado com baseURL do backend
+import { createContext, useContext, useState, useEffect } from "react";
+import jwt_decode from "jwt-decode";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Estado do usuário
   const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("translot_user"));
-    } catch {
-      return null;
+    const saved = localStorage.getItem("translot_user");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (!isTokenExpired(parsed.token)) return parsed;
     }
+    return null;
   });
 
-  // Loading global do auth
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user && isTokenExpired(user.token)) {
+        logout();
+      }
+    }, 1000 * 60); // checa a cada minuto
+    return () => clearInterval(interval);
+  }, [user]);
 
-  // Login
   async function login(email, password) {
-    setLoading(true);
     try {
-      const res = await api.post("/auth/login", { email, senha: password });
+      const res = await fetch("https://prodsync.onrender.com/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (res.data.token) {
-        const user = { ...res.data.usuario, token: res.data.token };
-        setUser(user);
-        localStorage.setItem("translot_user", JSON.stringify(user));
-        setLoading(false);
+      const data = await res.json();
+      if (res.ok) {
+        setUser(data);
+        localStorage.setItem("translot_user", JSON.stringify(data));
         return { ok: true };
       } else {
-        setUser(null);
-        setLoading(false);
-        return { ok: false, error: "Usuário ou senha incorretos" };
+        return { ok: false, error: data.message || "Erro ao autenticar" };
       }
     } catch (err) {
-      setUser(null);
-      setLoading(false);
-      return { ok: false, error: err.response?.data?.error || err.message };
+      return { ok: false, error: err.message };
     }
   }
 
-  // Logout
   function logout() {
     setUser(null);
     localStorage.removeItem("translot_user");
+    // opcional: dispara evento global para api.js
+    window.dispatchEvent(new Event("logout"));
+  }
+
+  function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+      const decoded = jwt_decode(token);
+      if (!decoded.exp) return true;
+      const now = Date.now() / 1000;
+      return decoded.exp < now;
+    } catch {
+      return true;
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Hook para consumir o AuthContext
 export function useAuth() {
   return useContext(AuthContext);
 }
