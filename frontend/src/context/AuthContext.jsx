@@ -34,12 +34,12 @@ export function AuthProvider({ children }) {
     return () => clearInterval(interval);
   }, [user, logout]);
 
-  async function login(email, password) {
+  async function login(email, senha) {
     try {
       const res = await fetch("https://prodsync.onrender.com/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, senha }),
       });
 
       const data = await res.json();
