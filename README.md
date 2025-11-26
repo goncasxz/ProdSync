@@ -54,7 +54,7 @@ A documentação arquitetural segue o modelo C4 para descrever o software em dif
 ### Nível 1: Diagrama de Contexto
 Visão macro do sistema. Mostra como o *ProdSync* se comunica com os usuários.
 
-mermaid
+```mermaid
 C4Context
     title Diagrama de Contexto - ProdSync
 
@@ -65,7 +65,7 @@ C4Context
 
     Rel(gerente, prodsync, "Gerencia produção")
     Rel(estoquista, prodsync, "Movimenta estoque")
-
+```
 
 ### Nível 2: Diagrama de Container
 Visão das aplicações e serviços.
