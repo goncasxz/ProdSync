@@ -54,7 +54,7 @@ A documentação arquitetural segue o modelo C4 para descrever o software em dif
 ### Nível 1: Diagrama de Contexto
 Visão macro do sistema. Mostra como o *ProdSync* se comunica com os usuários.
 
-![Diagrama de Contexto do ProdSync](https://www.plantuml.com/plantuml/svg/TPFFRXen4CRlVeefbu94GQeuLbNubuI8aWrBcYCQl9EDMzQcjfU4L7sOg8UUUghw1BnOnxkmGANSl9vlPdxpUVRCURG-pvOGMPF46osXRxH7fSd2G65gCHFYBOoqNEOA43AKra12Hx9-HxnH8Swt7_gTThyphu8VXNWWJ5WrsVvUqnBU2w_yalQryRJKkmf3Y8YiCxgUaYNjQIwRKBiepo4dwFBjh-rFK-D0Lv9p26k5qBFcqP6jDVO5o7dpBLSyQ55ZM7s-cYZYZVEKpNicrmdQJNt5pHn3pHUx6ywi_2h5jGPy5zKWzKTQp76rOjsvvKlI2SHHDtIS4ahVXC_AK_WSST3Ue-IX3EGktxvOPK2YjPHYWg0DQ5o7ix4jA0oG38ivr_HAOc41r4DdUl8D8605-wsUMUHWjNr9bKRN2cCTy72bTdWzb5y3NJSQ1Po9IQZrnJLX-BIoR4tXKJI2wJ2UtUVBLl2zj8pvB3VWfz2KRlz8PPh_KrtTpPWdtJCdF8Chh8wiSXcUCWqMzGGzBj0HznpiZg5_P9nFBSKtuuB6PlXCUb-E-z_kN6FgOYjyE8sD9yVTFvcroXWg8FsbqWVnGuWfBOzNw_1UjwvOZClPB8fP77Id6_IgjD1MqOF5Kmh9gWI0g_XwKcMrpydBXrsRAkF8Xp4fdrji3vsqgbpPMJzg1o_2dbvUtyt7mulXP51lY3D-H_wJ_m40)
+![Diagrama de Contexto do ProdSync](https://www.plantuml.com/plantuml/svg/PLB1JW8n4BttAqOkGe8I4ux6a0114qK21uzas8xOfBkLQPU8VsCyUE9a_8BzCQUxx88nsSEqy-QzUQyxy04vvAc56Jkzs6K935qMw2t0oE2QCLNg7EwonEO6459Cs86c6kHWsE_AhV70RfKB6Mno0XFncdAswknGm_MmtnlsbuV16wLU23KnJ8lzbYnSgM22fLeL_uXSDDifDIFsBcklYKcwNMXDgYeEH5HUV1MVhbKt4eFWM5Fc8-2r0NI1qGScN1bhj6m214mMG_7DnldBLgTM8X_S9ZVYJJZ7pI4gp0cjUPTOtDQaiWGAzG-LId9YrDZpMEmrGinaAtV5Xx17ShNO-K1fEsxanPYmDIzGjQB0miIg2OETBNrMMyILZuuXSIaykyG1fV-yoMTTeDAMcfCzndUYt-HrJ4dW4NqQmSd0GsqRAW2LlcuVdvRtuybuEcftr80oBN_NBm00)
 
 
 
@@ -65,7 +65,7 @@ Visão das aplicações e serviços.
 - *Backend API:* Servidor Node.js/Express.
 - *Database:* Banco relacional PostgreSQL.
 
-![Diagrama de Container](https://editor.plantuml.com/uml/TPFFRXen4CRlVeefbu94GQeuLbNubuI8aWrBcYCQl9EDMzQcjfU4L7sOg8UUUghw1BnOnxkmGANSl9vlPdxpUVRCURG-pvOGMPF46osXRxH7fSd2G65gCHFYBOoqNEOA43AKra12Hx9-HxnH8Swt7_gTThyphu8VXNWWJ5WrsVvUqnBU2w_yalQryRJKkmf3Y8YiCxgUaYNjQIwRKBiepo4dwFBjh-rFK-D0Lv9p26k5qBFcqP6jDVO5o7dpBLSyQ55ZM7s-cYZYZVEKpNicrmdQJNt5pHn3pHUx6ywi_2h5jGPy5zKWzKTQp76rOjsvvKlI2SHHDtIS4ahVXC_AK_WSST3Ue-IX3EGktxvOPK2YjPHYWg0DQ5o7ix4jA0oG38ivr_HAOc41r4DdUl8D8605-wsUMUHWjNr9bKRN2cCTy72bTdWzb5y3NJSQ1Po9IQZrnJLX-BIoR4tXKJI2wJ2UtUVBLl2zj8pvB3VWfz2KRlz8PPh_KrtTpPWdtJCdF8Chh8wiSXcUCWqMzGGzBj0HznpiZg5_P9nFBSKtuuB6PlXCUb-E-z_kN6FgOYjyE8sD9yVTFvcroXWg8FsbqWVnGuWfBOzNw_1UjwvOZClPB8fP77Id6_IgjD1MqOF5Kmh9gWI0g_XwKcMrpydBXrsRAkF8Xp4fdrji3vsqgbpPMJzg1o_2dbvUtyt7mulXP51lY3D-H_wJ_m40)
+![Diagrama de Container](https://www.plantuml.com/plantuml/svg/TPFFRXen4CRlVeefbu94GQeuLbNubuI8aWrBcYCQl9EDMzQcjfU4L7sOg8UUUghw1BnOnxkmGANSl9vlPdxpUVRCURG-pvOGMPF46osXRxH7fSd2G65gCHFYBOoqNEOA43AKra12Hx9-HxnH8Swt7_gTThyphu8VXNWWJ5WrsVvUqnBU2w_yalQryRJKkmf3Y8YiCxgUaYNjQIwRKBiepo4dwFBjh-rFK-D0Lv9p26k5qBFcqP6jDVO5o7dpBLSyQ55ZM7s-cYZYZVEKpNicrmdQJNt5pHn3pHUx6ywi_2h5jGPy5zKWzKTQp76rOjsvvKlI2SHHDtIS4ahVXC_AK_WSST3Ue-IX3EGktxvOPK2YjPHYWg0DQ5o7ix4jA0oG38ivr_HAOc41r4DdUl8D8605-wsUMUHWjNr9bKRN2cCTy72bTdWzb5y3NJSQ1Po9IQZrnJLX-BIoR4tXKJI2wJ2UtUVBLl2zj8pvB3VWfz2KRlz8PPh_KrtTpPWdtJCdF8Chh8wiSXcUCWqMzGGzBj0HznpiZg5_P9nFBSKtuuB6PlXCUb-E-z_kN6FgOYjyE8sD9yVTFvcroXWg8FsbqWVnGuWfBOzNw_1UjwvOZClPB8fP77Id6_IgjD1MqOF5Kmh9gWI0g_XwKcMrpydBXrsRAkF8Xp4fdrji3vsqgbpPMJzg1o_2dbvUtyt7mulXP51lY3D-H_wJ_m40)
 
 
 ### Nível 3: Diagrama de Componentes
@@ -73,93 +73,13 @@ Visão das aplicações e serviços.
 #### 3.1 Backend API
 Detalhe interno da API. Segue o padrão Controller-Service-Repository, utilizando Prisma para acesso a dados.
 
-mermaid
-C4Component
-    title Diagrama de Componentes - Backend API
-
-    Container(web_app, "Frontend", "React", "Cliente HTTP")
-    ContainerDb(database, "PostgreSQL", "Banco de Dados")
-
-    Container_Boundary(api, "Backend Application") {
-        
-        Component(auth_middleware, "Auth Middleware", "Middleware", "Intercepta requisições para validar JWT.")
-        
-        Component(routes, "Routes", "Express Router", "Roteamento: /auth, /materia-prima, /producao, /produto")
-
-        Boundary(controllers, "Controllers Layer") {
-            Component(auth_ctrl, "Auth Controller", "Controller", "Trata request/response de login")
-            Component(mp_ctrl, "MateriaPrima Controller", "Controller", "Trata request/response de insumos")
-            Component(prod_ctrl, "Producao Controller", "Controller", "Trata request/response de OPs")
-        }
-
-        Boundary(services, "Services Layer") {
-            Component(auth_svc, "Auth Service", "Service", "Lógica de autenticação")
-            Component(mp_svc, "MateriaPrima Service", "Service", "Regras de negócio de MP")
-            Component(prod_svc, "Producao Service", "Service", "Regras de produção e consumo")
-            Component(prisma_client, "Prisma Client", "ORM", "Configuração de conexão")
-        }
-
-        Boundary(repos, "Repositories Layer") {
-            Component(mp_repo, "MateriaPrima Repository", "Repository", "Abstração de banco para MP")
-            Component(prod_repo, "Producao Repository", "Repository", "Abstração de banco para Produção")
-        }
-    }
-
-    Rel(web_app, routes, "JSON")
-    Rel(routes, auth_middleware, "Verifica")
-    Rel(auth_middleware, auth_ctrl, "Passa")
-    Rel(auth_middleware, mp_ctrl, "Passa")
-    Rel(auth_middleware, prod_ctrl, "Passa")
-
-    Rel(auth_ctrl, auth_svc, "Chama")
-    Rel(mp_ctrl, mp_svc, "Chama")
-    Rel(prod_ctrl, prod_svc, "Chama")
-
-    Rel(mp_svc, mp_repo, "Usa")
-    Rel(prod_svc, prod_repo, "Usa")
-
-    Rel(mp_repo, prisma_client, "Query")
-    Rel(prod_repo, prisma_client, "Query")
-    Rel(prisma_client, database, "SQL")
+![Diagrama de Componentes](https://www.plantuml.com/plantuml/svg/dLNDJjj04BxxARQvD4ZG7CgfgYh0eGMK49E4ShGcwo6iQdlTtNKWGdsQ7dhg2VK9ycATNV_c1rg15B4_ttmpyysCzqWRK2PFOXOe6KsMAMSdmBzX6Z5V9fbCCJMQzGNC5IIUzvQTfppE1GEM05UIHTZWK3F_q7iZB8BEF_g7FVymhAy_UTuTGeIANQv-Bp1cxpqZJ8mLEsoI7TIX70VddkVBr818KNNlSHP2beMSmE5idtK-AxeZO8VMOmHkxCAFXULXPzDfqDbhpFkpRWG6Pg2nOGYaDdE5awk1DJs1bBlS-X19JSQDTNWYypG2jUn29Xoq337BOi7129bszjYZjIWpwK9kxi94H56Czw2GZ8xfX0th4-joVNTEWIkEcG6cy7ikj5ZzMlqXJJ9Gm1OG2mg1NTnCtnN1LQwKp4avgu9RMAhJXqoXrioTAAUGD0W9mUK7rhF1xRDU0dGfu21J8W7QPzGDEGTPBOsqZkhSEScXP1oZiixyPiS6i2GlLW56VniYSAFYAlt6gBD6ONTJ1MNcg4sFmYSIZROWiPmB4dY3d8fOKW-BF0ARnYjTY5JdYQlwkXEhG-KcAELvfOjHOEb_j0JLg1Q2kz9DokNBKke5hvGi3JgDhLqELazpQaZhZWp8ZZRKH3_bBlKAjZNnThEEaKPLMz8KvwidBjoO38FTQXMqjLZ_edITvc9aoAZ5R1rs40kTGCZTT3jsksV5j5k-qNXOrk9Mp7DL96tfYH4V2W7QqYlCf1iP-ryOgSGBsfDM5hyfLcsxxBIPtEvufaqhYfdxjhWvVawsqaEjs-lOWrhD8c7x6sEyzVMilnaNaz4bGIscEjl-T7sbf6-fbKhW5g0zvm5e_IomcTaNOMjJLm8RP77H6WZ_ZXwIaglsK3Tu-xP5tEhL2b4HkDEcwDTwpTpTjajshTl6nU5cmrxbIALhiVmFRErk-_coxnRvdPoDRiB1wPVJotvtppkYTubUzhy0)
 
 
 #### 3.2 Frontend SPA
 Estrutura de pastas e gerenciamento de estado no React/Vite.
 
-mermaid
-C4Component
-    title Diagrama de Componentes - Frontend SPA
-
-    Container(api, "Backend API", "Node.js", "Servidor")
-
-    Container_Boundary(spa, "Frontend Application") {
-        
-        Component(app_entry, "App / Main", "React Entry Point", "Inicializa rotas e provedores.")
-        
-        Component(auth_context, "Auth Context", "Context API", "Gerencia estado global do usuário e token.")
-        
-        Component(private_route, "Private Route", "Component", "Protege páginas que exigem login.")
-
-        Boundary(pages, "Pages") {
-            Component(login_page, "Login Page", "Page", "Tela de acesso.")
-            Component(dashboard, "Dashboard Proto", "Page", "Tela principal de gestão.")
-        }
-
-        Component(api_service, "API Service", "Axios/Fetch (api.js)", "Centraliza configurações de chamadas HTTP.")
-    }
-
-    Rel(app_entry, auth_context, "Prover estado")
-    Rel(app_entry, private_route, "Renderiza")
-    
-    Rel(private_route, auth_context, "Verifica autenticação")
-    Rel(private_route, dashboard, "Renderiza se logado")
-    
-    Rel(dashboard, api_service, "Busca dados")
-    Rel(login_page, api_service, "Envia credenciais")
-    Rel(login_page, auth_context, "Atualiza token")
-
-    Rel(api_service, api, "HTTPS / JSON")
-
+![Diagrama de Componentes](https://www.plantuml.com/plantuml/svg/RLHDSzCm4BtxLoovqCn0Uw17XccQfXzC2Pwu0qUFAcyTWICPISwqCFoOJW-SEF8ByiTuQoTfOl15MldjUwlTPv-4g7ni5XMbtXNPWzLqxfsDR0iQkqNjBDiOwCoeqgj5ahoaAwkhnf2YXTBUKS7FE0uqFavU647W_Etu-6Xyd6zVlqkIEQk2FKrNlvTSqPiacbZnXbtroLu_rvAbeoGP8r36iZzGjSaraFdTAngSAlrLCAFqQe1mwWe-_19acx5VciBvmN0dEJzrZIsKVpW8jG9egp6gwyfe5OspWo7za9HrBT2hSwp-0NZ0w8W-W4iaPgnqf8cyezGP6-NmoXfjL6M-A_8kga1CjNTBHYaS3hjgjjHDdECkAE4-2Zj26dUXKAstcyjTi6SBRc8Chd1KLkvMLOHT4vhLepSEMj6X7psPsfkbYfnxrqG6KTh5D9Eu4rf31-rR5xb4rQl7qbXSu5l3nFUcv0LL3aSj-xQHjIevI9giRUy8pxDucv8B2g1h2KYWWtMAh3TSjVDNcaDmGhzFKQWmltNA5y2URVPYskZ-eS5TqQDQ-iA4YkBggMNykJzIamVnXvQYq5xAkaXeHlV6XQDpZdfEWeIVXcsJn0JTO36oErCsNgr-hVx0h93ISvWOXTBbpKtQTaWaPrpj-gStxrHyuTVZH4eFtH_R34Pb3trX5smFq6F_1EmTF2tdOCGErJvjT7gvkotUwb1WcNXNN9kr0zlluMaJe5G06jO2ktFVnqxi4YRMdelMpkQ_6Rql8pPTvrjxRwhPeztxBSWGCdofxxEFKq5dbny_vzUJYydqx62OdE22-Etz1G00)
 
 ## 🚀 Como Executar Localmente
 
