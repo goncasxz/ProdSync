@@ -54,18 +54,8 @@ A documentação arquitetural segue o modelo C4 para descrever o software em dif
 ### Nível 1: Diagrama de Contexto
 Visão macro do sistema. Mostra como o *ProdSync* se comunica com os usuários.
 
-```mermaid
-C4Context
-    title Diagrama de Contexto - ProdSync
+![Diagrama de Contexto do ProdSync](https://editor.plantuml.com/uml/PLB1JW8n4BttAqOkGe8I4ux6a0114qK21uzas8xOfBkLQPU8VsCyUE9a_8BzCQUxx88nsSEqy-QzUQyxy04vvAc56Jkzs6K935qMw2t0oE2QCLNg7EwonEO6459Cs86c6kHWsE_AhV70RfKB6Mno0XFncdAswknGm_MmtnlsbuV16wLU23KnJ8lzbYnSgM22fLeL_uXSDDifDIFsBcklYKcwNMXDgYeEH5HUV1MVhbKt4eFWM5Fc8-2r0NI1qGScN1bhj6m214mMG_7DnldBLgTM8X_S9ZVYJJZ7pI4gp0cjUPTOtDQaiWGAzG-LId9YrDZpMEmrGinaAtV5Xx17ShNO-K1fEsxanPYmDIzGjQB0miIg2OETBNrMMyILZuuXSIaykyG1fV-yoMTTeDAMcfCzndUYt-HrJ4dW4NqQmSd0GsqRAW2LlcuVdvRtuybuEcftr80oBN_NBm00)
 
-    Person(gerente, "Gerente de Produção", "Gerencia ordens de produção, rastreabilidade e relatórios.")
-    Person(estoquista, "Estoquista", "Realiza movimentações de entrada/saída e inventário.")
-
-    System(prodsync, "ProdSync System", "Sistema de Controle de Estoque e Produção com foco em rastreabilidade de lotes.")
-
-    Rel(gerente, prodsync, "Gerencia produção")
-    Rel(estoquista, prodsync, "Movimenta estoque")
-```
 
 ### Nível 2: Diagrama de Container
 Visão das aplicações e serviços.
@@ -74,27 +64,7 @@ Visão das aplicações e serviços.
 - *Backend API:* Servidor Node.js/Express.
 - *Database:* Banco relacional PostgreSQL.
 
-mermaid
-C4Container
-    title Diagrama de Container - ProdSync
-
-    Person(gerente, "Gerente de Produção", "Acessa via Browser")
-    Person(estoquista, "Estoquista", "Acessa via Browser")
-
-    System_Boundary(prodsync_boundary, "ProdSync System") {
-        
-        Container(web_app, "Frontend SPA", "React, Vite", "Interface do usuário carregada no navegador. Gerencia autenticação (Context) e renderiza as páginas.")
-        
-        Container(api_app, "Backend API", "Node.js, Express", "API RESTful. Processa regras de negócio, autenticação JWT e gerencia dados via Prisma.")
-        
-        ContainerDb(database, "Database", "PostgreSQL", "Armazena dados de Usuários, Produtos, Lotes e Movimentações.")
-    }
-
-    Rel(gerente, web_app, "Usa", "HTTPS")
-    Rel(estoquista, web_app, "Usa", "HTTPS")
-
-    Rel(web_app, api_app, "Requisições JSON", "HTTPS/Fetch")
-    Rel(api_app, database, "Leitura/Escrita", "TCP/SQL")
+![Diagrama de Container](https://editor.plantuml.com/uml/TPFFRXen4CRlVeefbu94GQeuLbNubuI8aWrBcYCQl9EDMzQcjfU4L7sOg8UUUghw1BnOnxkmGANSl9vlPdxpUVRCURG-pvOGMPF46osXRxH7fSd2G65gCHFYBOoqNEOA43AKra12Hx9-HxnH8Swt7_gTThyphu8VXNWWJ5WrsVvUqnBU2w_yalQryRJKkmf3Y8YiCxgUaYNjQIwRKBiepo4dwFBjh-rFK-D0Lv9p26k5qBFcqP6jDVO5o7dpBLSyQ55ZM7s-cYZYZVEKpNicrmdQJNt5pHn3pHUx6ywi_2h5jGPy5zKWzKTQp76rOjsvvKlI2SHHDtIS4ahVXC_AK_WSST3Ue-IX3EGktxvOPK2YjPHYWg0DQ5o7ix4jA0oG38ivr_HAOc41r4DdUl8D8605-wsUMUHWjNr9bKRN2cCTy72bTdWzb5y3NJSQ1Po9IQZrnJLX-BIoR4tXKJI2wJ2UtUVBLl2zj8pvB3VWfz2KRlz8PPh_KrtTpPWdtJCdF8Chh8wiSXcUCWqMzGGzBj0HznpiZg5_P9nFBSKtuuB6PlXCUb-E-z_kN6FgOYjyE8sD9yVTFvcroXWg8FsbqWVnGuWfBOzNw_1UjwvOZClPB8fP77Id6_IgjD1MqOF5Kmh9gWI0g_XwKcMrpydBXrsRAkF8Xp4fdrji3vsqgbpPMJzg1o_2dbvUtyt7mulXP51lY3D-H_wJ_m40)
 
 
 ### Nível 3: Diagrama de Componentes
