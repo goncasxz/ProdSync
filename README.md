@@ -89,34 +89,48 @@ Estrutura de pastas e gerenciamento de estado no React/Vite.
 
 ### 1. Configuração do Backend
 
-bash
+```bash
 cd backend
+```
 
 # Instalar dependências
+```bash
 npm install
+```
 
 # Configurar variáveis de ambiente
-# Crie um arquivo .env na pasta backend com o seguinte conteúdo:
-# DATABASE_URL="postgresql://SEU_USUARIO:SUA_SENHA@localhost:5432/NOME_DO_BANCO?schema=public"
-# JWT_SECRET="sua_chave_secreta"
+## Crie um arquivo .env na pasta backend com o seguinte conteúdo:
+```bash
+DATABASE_URL="postgresql://SEU_USUARIO:SUA_SENHA@localhost:5432/NOME_DO_BANCO?schema=public"
+JWT_SECRET="sua_chave_secreta"
+```
 
 # Rodar migrações do Prisma (criar tabelas no banco)
+```bash
 npx prisma migrate dev --name init
+```
 
 # Iniciar o servidor
+```bash
 npm start
-# O backend rodará na porta definida (ex: 3000)
+```
+## O backend rodará na porta definida (ex: 3000)
 
 
 ### 2. Configuração do Frontend
 
-bash
+```bash
 cd frontend
+```
 
 # Instalar dependências
+```bash
 npm install
+```
 
 # Iniciar o servidor de desenvolvimento (Vite)
+```bash
 npm run dev
+```
 
 # Acesse o link mostrado no terminal (geralmente http://localhost:5173)
