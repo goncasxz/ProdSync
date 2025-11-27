@@ -12,6 +12,9 @@ export function makeUsuarioController({ usuarioService }) {
          * @swagger
          * /usuarios:
          *   post:
+         *     security:
+         *       - bearerAuth: [] 
+         *     x-admin-required: true
          *     summary: Cria um novo usuário
          *     tags: [Usuários]
          *     requestBody:

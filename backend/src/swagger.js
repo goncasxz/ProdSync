@@ -8,6 +8,7 @@ const swaggerDefinition = {
     version: "1.0.0",
     description: "Documentação da API do ProdSync",
   },
+
   servers: [
     {
       url: "http://localhost:8080",
@@ -16,6 +17,22 @@ const swaggerDefinition = {
       url: "https://prodsync.onrender.com",
     },
   ],
+
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "JWT token para autenticação. Ex.: 'Bearer <token>'"
+      }
+    }
+  },
+
+  security: [
+    { bearerAuth: [] }
+  ],
+
 };
 
 const options = {

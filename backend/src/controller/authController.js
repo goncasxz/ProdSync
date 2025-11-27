@@ -12,6 +12,7 @@ export function makeAuthController({ authService }) {
          * @swagger
          * /auth/register:
          *   post:
+         *     security: []
          *     summary: Registra um novo usuário
          *     tags: [Auth]
          *     requestBody:
@@ -68,6 +69,7 @@ export function makeAuthController({ authService }) {
          * @swagger
          * /auth/login:
          *   post:
+         *     security: []
          *     summary: Autentica um usuário e retorna o token JWT
          *     tags: [Auth]
          *     requestBody:
