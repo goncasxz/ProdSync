@@ -10,7 +10,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: "http://localhost:3000",
+      url: "http://localhost:8080",
     },
     {
       url: "https://prodsync.onrender.com",
@@ -20,7 +20,11 @@ const swaggerDefinition = {
 
 const options = {
   swaggerDefinition,
-  apis: ["./routes/*.js", "./controllers/*.js"],
+  apis: [
+    "./src/controllers/*.js",
+    "./controllers/*.js",
+    "./**/*.js"
+  ],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);
