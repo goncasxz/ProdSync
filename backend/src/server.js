@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '../generated/prisma/index.js';
+import express from "express";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./swagger.js";
 
 
 dotenv.config();
@@ -17,6 +20,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const prisma = new PrismaClient();
 
