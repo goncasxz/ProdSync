@@ -21,7 +21,7 @@ const swaggerDefinition = {
 const options = {
   swaggerDefinition,
   apis: [
-    "./src/controllers/*.js"],
+    "./src/controller/*.js"],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);
