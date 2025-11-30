@@ -5,9 +5,11 @@
   --muted:#a2a6ad;
   --text:#e7e7ea;
   --line:#2a2a2d;
-  --brand:#2563eb;
-  --brand-2:#1d4ed8;
+
+  --brand:#4b5563;   /* cinza médio */
+  --brand-2:#9ca3af; /* cinza mais claro */
 }
+
 
 html, body, #root { height: 100%; }
 body { margin:0; background:var(--bg); color:var(--text);
@@ -26,7 +28,11 @@ body { margin:0; background:var(--bg); color:var(--text);
 .search-wrap { flex:1; display:flex; justify-content:center; }
 .search-input { width: min(720px, 100%); background:#0d0e10; color:var(--text);
   border:1px solid var(--line); border-radius: 10px; padding:10px 12px; outline:none; }
-.search-input:focus { box-shadow: 0 0 0 3px rgba(37,99,235,.25); border-color: transparent; }
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(148,163,184,.35);
+  border-color: transparent;
+}
+
 
 .topbar-right { display:flex; align-items:center; gap:8px; }
 .icon-btn { background:#0d0e10; color:var(--text); border:1px solid var(--line); padding:8px;
@@ -56,7 +62,7 @@ body { margin:0; background:var(--bg); color:var(--text);
 
 .side-search input { width:100%; background:#0e1013; color:var(--text); border:1px solid var(--line);
   border-radius:10px; padding:10px 12px; outline:none; }
-.side-search input:focus { box-shadow:0 0 0 3px rgba(37,99,235,.25); border-color:transparent; }
+.side-search input:focus { box-shadow:0 0 0 3px rgba(17, 73, 193, 0.25); border-color:transparent; }
 
 .side-list { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:8px; }
 .side-item {
@@ -91,7 +97,12 @@ body { margin:0; background:var(--bg); color:var(--text);
 .panel-head h3 { margin:0; font-size:14px; letter-spacing:.6px; }
 .range { display:flex; align-items:center; gap:8px; }
 .chip { background:#0e1013; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:6px 10px; cursor:pointer; }
-.chip.active { background:#172036; border-color:#223869; color:#cfe3ff; }
+.chip.active {
+  background:#1f2933;
+  border-color:#4b5563;
+  color:#e5e7eb;
+}
+
 .btn.small { background: var(--brand); color:#fff; border:none; border-radius:8px; padding:7px 10px; cursor:pointer; }
 
 /* Card do gráfico (placeholder) */
@@ -151,7 +162,10 @@ body { margin:0; background:var(--bg); color:var(--text);
 .rail{ overflow:hidden; }
 
 /* estado ativo do botão do rail (só visual) */
-.rail-item.active{ outline:2px solid rgba(37,99,235,.35); }
+.rail-item.active{
+  outline:2px solid rgba(148,163,184,.45);
+}
+
 
 /* --- Modal (se ainda não adicionou) --- */
 .modal-backdrop{
@@ -257,15 +271,13 @@ body { margin:0; background:var(--bg); color:var(--text);
 .field { display: grid; gap: 6px; }
 .label { font-size: 12px; color: var(--muted); }
 
-.modal-form input, .modal-form select, .modal-form textarea{
-  width:100%;
-  background:#0e1013;
-  color:var(--text);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px 12px;
-  outline:none;
+.modal-form input:focus,
+.modal-form select:focus,
+.modal-form textarea:focus {
+  box-shadow: 0 0 0 3px rgba(148,163,184,.35);
+  border-color: transparent;
 }
+
 .modal-form input:focus, .modal-form select:focus, .modal-form textarea:focus{
   box-shadow:0 0 0 3px rgba(37,99,235,.25);
   border-color:transparent;
@@ -427,45 +439,85 @@ body { margin:0; background:var(--bg); color:var(--text);
   gap: 8px;
 }
 
+
 /* ================== TEMA ESCURO / CLARO ================== */
 
-/* Tema escuro (padrão) */
+/* Tema escuro (padrão) – só tons de cinza */
 .dash-root.theme-dark {
-  background: #020617;
+  background: radial-gradient(circle at top left,
+    #18181b 0%,
+    #09090b 55%,
+    #020202 100%
+  );
   color: #e5e7eb;
 }
 
-/* Tema claro */
-.dash-root.theme-light {
-  background: #f3f4f6;
-  color: #0f172a;
-}
-
-/* Topbar */
+/* Topbar dark */
 .theme-dark .topbar {
-  background: #020617;
-  border-bottom: 1px solid #1e293b;
+  background: linear-gradient(180deg, #18181b 0%, #050506 100%);
+  border-bottom: 1px solid #27272a;
 }
 
-.theme-light .topbar {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-/* Lateral + rail */
+/* Lateral + rail dark */
 .theme-dark .rail {
-  background: #020617;
-  border-right: 1px solid #1f2937;
-}
-
-.theme-light .rail {
-  background: #f9fafb;
-  border-right: 1px solid #e5e7eb;
+  background: linear-gradient(180deg, #111113 0%, #050506 100%);
+  border-right: 1px solid #27272a;
 }
 
 .theme-dark .side {
-  background: #020617;
-  border-right: 1px solid #1f2937;
+  background: linear-gradient(180deg, #111113 0%, #050506 100%);
+  border-right: 1px solid #27272a;
+}
+
+/* Conteúdo dark (onde fica o “Bem-vindo”) */
+.theme-dark .content {
+  background: radial-gradient(circle at top,
+    #141417 0%,
+    #080809 50%,
+    #020202 100%
+  );
+}
+
+/* Painéis / cards dark */
+.theme-dark .panel,
+.theme-dark .recent-card,
+.theme-dark .modal-window,
+.theme-dark .card.chart {
+  background: linear-gradient(
+    180deg,
+    #111113 0%,
+    #0d0d0f 35%,
+    #0a0a0c 100%
+  );
+  border: 1px solid #27272a;
+}
+
+/* ================== TEMA CLARO ================== */
+
+.dash-root.theme-light {
+  background: linear-gradient(
+    180deg,
+    #f9fafb 0%,
+    #f3f4f6 40%,
+    #e5e7eb 100%
+  );
+  color: #0f172a;
+}
+
+/* Topbar light */
+.theme-light .topbar {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f9fafb 100%
+  );
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Lateral + rail light */
+.theme-light .rail {
+  background: #f3f4f6;
+  border-right: 1px solid #e5e7eb;
 }
 
 .theme-light .side {
@@ -473,34 +525,26 @@ body { margin:0; background:var(--bg); color:var(--text);
   border-right: 1px solid #e5e7eb;
 }
 
-/* Conteúdo */
-.theme-dark .content {
-  background: #020617;
-}
-
+/* Conteúdo light (fundo atrás do painel) */
 .theme-light .content {
-  background: #f9fafb;
+  background: linear-gradient(
+    180deg,
+    #f9fafb 0%,
+    #f3f4f6 40%,
+    #e5e7eb 100%
+  );
 }
 
-/* Cards / painéis */
-.theme-dark .panel,
-.theme-dark .recent-card,
-.theme-dark .modal-window {
-  background: #020617;
-  border: 1px solid #1e293b;
-}
-
+/* Cards / painéis / quadradinhos no tema claro */
 .theme-light .panel,
 .theme-light .recent-card,
+.theme-light .card.chart,
+.theme-light .t-row,
+.theme-light .side-item,
 .theme-light .modal-window {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-}
-
-/* Botões padrão se adaptam melhor */
-.theme-light .btn,
-.theme-light .ghost-btn {
-  border-radius: 6px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: #0f172a;
 }
 
 /* ================== CONFIG / THEME ================== */
@@ -581,4 +625,221 @@ body { margin:0; background:var(--bg); color:var(--text);
   margin-top: 4px;
   font-size: 0.8rem;
   opacity: 0.7;
+}
+
+/* Aumentar o logo */
+.brand-logo {
+  height: 90px;   /* antes era 28px */
+  width: auto;
+  object-fit: contain;
+}
+
+/* Colocar "Filial: MATRIZ" e o ? na MESMA LINHA */
+.env-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;          /* espaço entre o texto e o botão */
+}
+
+/* Deixar o botão de ajuda em vermelho redondinho */
+.icon-btn-help {
+  background: transparent !important;  /* remove qualquer fundo */
+  color: #ef4444;                      /* ❓ vermelha */
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+
+.icon-btn-help:hover {
+  filter: brightness(0.9);
+}
+
+/* ======== AJUSTE DOS QUADRADOS NO TEMA CLARO ======== */
+
+/* Painéis, cards, tabelas, blocos */
+.theme-light .panel,
+.theme-light .recent-card,
+.theme-light .card.chart,
+.theme-light .t-row,
+.theme-light .side-item {
+  background: #f3f4f6 !important;  /* CINZA CLARO */
+  border: 1px solid #d1d5db !important; /* CINZA MÉDIO */
+  color: #0f172a; /* Texto mais escuro */
+}
+
+/* Textos dentro */
+.theme-light .side-item-title,
+.theme-light .panel-head h3,
+.theme-light .bar-label,
+.theme-light .table-like {
+  color: #1e293b !important;
+}
+
+/* Muted text no tema claro */
+.theme-light .side-item-sub,
+.theme-light .t-head {
+  color: #6b7280 !important; /* cinza suave */
+}
+
+/* Botões dentro dos cards no tema claro */
+.theme-light .ghost-btn {
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  background: #ffffff;
+}
+.theme-light .ghost-btn:hover {
+  background: #e5e7eb;
+}
+
+/* Chips */
+.theme-light .chip {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+/* ===================== MENU LATERAL NO TEMA CLARO ====================== */
+
+/* Fundo do rail */
+.theme-light .rail {
+  background: #f3f4f6;              /* cinza claro */
+  border-right: 1px solid #e5e7eb;
+}
+
+/* Cada quadrado (Operacional, Estoque, Produção…) */
+.theme-light .rail-item {
+  background: #ffffff;              /* fundo branco */
+  border: 1px solid #d1d5db;        /* borda cinza suave */
+  color: #374151;                   /* texto cinza escuro */
+}
+
+/* Hover no tema claro */
+.theme-light .rail-item:hover {
+  background: #f0f0f0;              /* leve cinza ao passar o mouse */
+}
+
+/* Ícone */
+.theme-light .rail-icon {
+  color: #4b5563;
+}
+
+/* Texto embaixo do ícone */
+.theme-light .rail-label {
+  color: #6b7280;
+}
+
+/* Estado ativo (selecionado) */
+.theme-light .rail-item.active {
+  outline: 2px solid rgba(99,102,241,0.3); /* roxo claro */
+  background: #eef2ff;                     /* roxo clarinho */
+  border-color: #c7d2fe;
+}
+
+.home-welcome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  padding: 32px;
+}
+
+.welcome-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.welcome-logo {
+  width: 120px;
+  opacity: 0.35; /* deixa ele transparente */
+  user-select: none;
+  pointer-events: none;
+}
+
+.welcome-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.welcome-phrase {
+  font-size: 15px;
+  color: #9ca3af;
+  margin: 0;
+  font-style: italic;
+}
+
+.welcome-sub {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Painel central */
+
+.panel {
+  background: linear-gradient(
+    180deg,
+    #111113 0%,
+    #0d0d0f 35%,
+    #0b0b0d 100%
+  );
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 0 24px;
+  color: #e5e7eb;
+}
+
+
+/* Cabeçalho dentro do painel */
+.panel-head h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+/* Texto de boas-vindas */
+.welcome-text {
+  color: #cbd5e1;
+  font-size: 1.05rem;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+/* Frase motivacional */
+.welcome-sub {
+  font-style: italic;
+  margin-bottom: 10px;
+  color: #94a3b8;
+}
+
+/* Logo transparente no painel */
+.panel-logo {
+  opacity: 0.45;
+  width: 140px;
+  margin-bottom: 10px;
+}
+
+
+/* ====== Modais mais largos ====== */
+.modal-window {
+  width: 85vw !important;  /* antes era ~50–60vw */
+  max-width: 1100px !important; /* limite pra não ficar gigante em telas grandes */
+}
+
+/* Conteúdo interno com mais espaço */
+.modal-body {
+  max-height: 75vh;  /* mantém sem estourar a tela */
+  overflow-y: auto;  /* scroll só vertical */
+  padding: 20px;
 }
