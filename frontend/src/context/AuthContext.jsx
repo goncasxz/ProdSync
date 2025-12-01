@@ -1,72 +1,65 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { jwtDecode } from "jwt-decode";
+import { createContext, useContext, useState, useEffect } from "react";
+import { api } from "../services/api"; // Importa sua instância configurada
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("translot_user");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (!isTokenExpired(parsed.token)) return parsed;
-      } catch {
-        localStorage.removeItem("translot_user");
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem("translot_user");
-    window.dispatchEvent(new Event("logout")); // caso api.js queira escutar
+  // 1. Ao iniciar, verifica se já tem usuário salvo
+  useEffect(() => {
+    const storedUser = localStorage.getItem("translot_user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  // Checa token expirado a cada minuto
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (user?.token && isTokenExpired(user.token)) {
-        logout();
-      }
-    }, 60_000);
-
-    return () => clearInterval(interval);
-  }, [user, logout]);
-
+  // 2. Função de Login integrada ao Backend
   async function login(email, senha) {
     try {
-      const res = await fetch("https://prodsync.onrender.com/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
-      });
+      // Chama o endpoint POST /auth/login
+      const response = await api.post("/auth/login", { email, senha });
 
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data);
-        localStorage.setItem("translot_user", JSON.stringify(data));
+      if (response.data.ok) {
+        const { token, usuario } = response.data;
+        
+        // Monta o objeto de usuário com o token
+        const userData = { token, ...usuario };
+
+        // Salva no localStorage (para o api.js ler depois)
+        localStorage.setItem("translot_user", JSON.stringify(userData));
+        
+        // Atualiza o estado global
+        setUser(userData);
         return { ok: true };
-      } else {
-        return { ok: false, error: data.message || "Erro ao autenticar" };
       }
-    } catch (err) {
-      return { ok: false, error: err.message };
+      return { ok: false, error: "Erro desconhecido no login." };
+    } catch (error) {
+      console.error("Erro no login:", error);
+      // Pega a mensagem de erro do backend (ex: "Usuário/senha inválidos")
+      const msg = error.response?.data?.error || "Falha ao conectar com o servidor.";
+      return { ok: false, error: msg };
     }
   }
 
-  function isTokenExpired(token) {
-    if (!token) return true;
-    try {
-      const decoded = jwtDecode(token);
-      return !decoded.exp || decoded.exp < Date.now() / 1000;
-    } catch {
-      return true;
-    }
+  // 3. Função de Logout
+  function logout() {
+    localStorage.removeItem("translot_user");
+    setUser(null);
+    // Opcional: Redirecionar via window.location ou navigate se necessário
   }
+
+  // Escuta o evento de logout forçado (criado no seu api.js quando o token expira)
+  useEffect(() => {
+    const handleLogout = () => logout();
+    window.addEventListener("logout", handleLogout);
+    return () => window.removeEventListener("logout", handleLogout);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, signed: !!user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -82,14 +82,6 @@ export default function DashboardProto() {
 
           <div className="env-wrapper">
             <div className="env-chip">Filial: MATRIZ</div>
-
-            <button
-              className="icon-btn icon-btn-help"
-              title="Ajuda"
-              onClick={() => openModal("ajuda", "Ajuda")}
-            >
-              ❓
-            </button>
           </div>
         </div>
       </header>
@@ -224,67 +216,86 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-/* ======= TELA: ENTRADA DE PRODUTO ======= */
+/* ======= TELA: ENTRADA DE PRODUTO (INTEGRADA) ======= */
+import { api } from "../services/api"; // Ajuste o caminho conforme sua estrutura
+
 function EntradaProdutoForm({ onClose }) {
-  const STORAGE = "translot_mov_entradas";
   const [item, setItem] = React.useState("");
   const [qtd, setQtd] = React.useState("");
   const [un, setUn] = React.useState("kg");
   const [lote, setLote] = React.useState("");
-  const [fab, setFab] = React.useState("");
+  const [fab, setFab] = React.useState(""); // Apenas visual por enquanto
+  
+  const [materias, setMaterias] = React.useState([]); // Lista do banco
   const [err, setErr] = React.useState("");
   const [ok, setOk] = React.useState("");
-  const [recentes, setRecentes] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE)) ?? [];
-    } catch {
-      return [];
-    }
-  });
+  const [loading, setLoading] = React.useState(false);
 
+  // 1. Busca dados ao abrir a modal
   React.useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "F9") {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchMaterias();
+  }, []);
 
-  function handleSave() {
+  async function fetchMaterias() {
+    try {
+      const res = await api.get("/materias-primas");
+      if (res.data.ok) {
+        // Ordena pela data de entrada (ID decrescente ou campo dataEntrada se houver)
+        // O backend retorna { ok: true, materiasPrimas: [...] }
+        const lista = res.data.materiasPrimas.sort((a, b) => b.id - a.id);
+        setMaterias(lista);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar matérias-primas", error);
+    }
+  }
+
+  // 2. Salvar no Backend
+  async function handleSave() {
     setErr("");
     setOk("");
-    if (!item.trim()) return setErr("Informe o item.");
+    
+    if (!item.trim()) return setErr("Informe o nome da matéria-prima.");
     const n = Number(qtd);
     if (!qtd || isNaN(n) || n <= 0) return setErr("Quantidade inválida.");
     if (!un) return setErr("Selecione a unidade.");
     if (!lote.trim()) return setErr("Informe o lote.");
-    if (!fab.trim()) return setErr("Informe o fabricante.");
 
-    const reg = {
-      id: Date.now(),
-      item: item.trim(),
-      quantidade: n,
-      unidade: un,
-      lote: lote.trim(),
-      fabricante: fab.trim(),
-      data: new Date().toISOString(),
-    };
+    setLoading(true);
 
-    const next = [reg, ...recentes].slice(0, 10);
-    setRecentes(next);
     try {
-      localStorage.setItem(STORAGE, JSON.stringify(next));
-    } catch {}
-    setOk("Entrada registrada.");
+      // Mapeando campos do Front para o Backend
+      const payload = {
+        nome: item.trim(),
+        quantidade: n,
+        unidadeMedida: un,
+        lote: lote.trim(),
+        // usuarioId é pego automaticamente pelo token no backend? 
+        // Se seu controller espera pegar do req.user, não precisa enviar.
+        // Se o controller espera no body, precisamos pegar do localStorage.
+        // Pelo seu código de backend: const usuarioId = req.user.id; (Está no controller, ok!)
+      };
 
-    setItem("");
-    setQtd("");
-    setUn("kg");
-    setLote("");
-    setFab("");
+      await api.post("/materias-primas", payload);
+
+      setOk("Matéria-prima registrada com sucesso!");
+      
+      // Limpa form
+      setItem("");
+      setQtd("");
+      setUn("kg");
+      setLote("");
+      setFab(""); // Fabricante não foi enviado pois não tem no Model
+      
+      // Atualiza a tabela
+      fetchMaterias();
+
+    } catch (error) {
+      const msg = error.response?.data?.error || "Erro ao salvar no servidor.";
+      setErr(msg);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -297,11 +308,12 @@ function EntradaProdutoForm({ onClose }) {
         className="form-grid form-entrada"
       >
         <div className="field full">
-          <label className="label">Item</label>
+          <label className="label">Item (Nome da MP)</label>
           <input
             value={item}
             onChange={(e) => setItem(e.target.value)}
             placeholder="Ex.: Ferro SAE 1020"
+            disabled={loading}
           />
         </div>
 
@@ -313,11 +325,12 @@ function EntradaProdutoForm({ onClose }) {
             value={qtd}
             onChange={(e) => setQtd(e.target.value)}
             placeholder="Ex.: 50"
+            disabled={loading}
           />
         </div>
         <div className="field">
           <label className="label">Unidade</label>
-          <select value={un} onChange={(e) => setUn(e.target.value)}>
+          <select value={un} onChange={(e) => setUn(e.target.value)} disabled={loading}>
             <option value="t">Toneladas (t)</option>
             <option value="kg">Quilos (kg)</option>
             <option value="g">Gramas (g)</option>
@@ -332,54 +345,55 @@ function EntradaProdutoForm({ onClose }) {
             value={lote}
             onChange={(e) => setLote(e.target.value)}
             placeholder="Ex.: L23-091"
+            disabled={loading}
           />
         </div>
+        
+        {/* Campo visual apenas, backend não suporta Fabricante ainda */}
         <div className="field">
-          <label className="label">Fabricante</label>
+          <label className="label">Fabricante (Visual)</label>
           <input
             value={fab}
             onChange={(e) => setFab(e.target.value)}
             placeholder="Ex.: Aço Brasil S.A."
+            disabled={loading}
           />
         </div>
 
         {err && <div className="alert error full">{err}</div>}
-        {ok && (
-          <div className="alert ok full">
-            ✅ {ok}
-          </div>
-        )}
+        {ok && <div className="alert ok full">✅ {ok}</div>}
 
         <div className="actions full">
-          <button type="button" className="ghost-btn" onClick={onClose}>
+          <button type="button" className="ghost-btn" onClick={onClose} disabled={loading}>
             Cancelar (Esc)
           </button>
-          <button type="submit" className="btn small">
-            Salvar (F9)
+          <button type="submit" className="btn small" disabled={loading}>
+            {loading ? "Salvando..." : "Salvar (F9)"}
           </button>
         </div>
       </form>
 
       <div className="recent-card">
-        <div className="recent-head">Últimas entradas</div>
-        {recentes.length === 0 ? (
-          <div className="side-empty">Nenhum registro ainda.</div>
+        <div className="recent-head">Matérias-primas Cadastradas (Banco)</div>
+        {materias.length === 0 ? (
+          <div className="side-empty">Nenhum registro encontrado no banco.</div>
         ) : (
           <div className="table-like">
             <div className="t-head">
-              <span>Data</span>
+              <span>ID</span>
               <span>Item</span>
               <span>Qtd</span>
               <span>Lote</span>
-              <span>Fabricante</span>
+              <span>Entrada</span>
             </div>
-            {recentes.map((r) => (
+            {materias.map((r) => (
               <div key={r.id} className="t-row">
-                <span>{new Date(r.data).toLocaleString()}</span>
-                <span>{r.item}</span>
-                <span>{`${r.quantidade} ${r.unidade}`}</span>
+                <span>#{r.id}</span>
+                <span>{r.nome}</span>
+                <span>{`${r.quantidade} ${r.unidadeMedida}`}</span>
                 <span>{r.lote}</span>
-                <span>{r.fabricante}</span>
+                {/* Ajuste de data se necessário */}
+                <span>{r.dataEntrada ? new Date(r.dataEntrada).toLocaleDateString() : "-"}</span>
               </div>
             ))}
           </div>
@@ -389,190 +403,140 @@ function EntradaProdutoForm({ onClose }) {
   );
 }
 
-/* ======= TELA: CADASTRO DE PRODUTOS ======= */
-function CadastroProdutos({ onClose }) {
-  const STORAGE = "translot_produtos";
-  const ENTRADAS = "translot_mov_entradas";
+/* ======= TELA: CADASTRO DE PRODUTOS (INTEGRADA) ======= */
 
+function CadastroProdutos({ onClose }) {
   const [nome, setNome] = React.useState("");
   const [un, setUn] = React.useState("un");
-  const [tipo, setTipo] = React.useState("mp"); // mp / pa
+  const [tipo, setTipo] = React.useState("pa"); // pa (Produto) ou mp (Matéria Prima)
+  
+  // Campos extras se for MP (pois o backend exige lote/qtd na criação de MP)
+  const [loteMp, setLoteMp] = React.useState("");
+  const [qtdMp, setQtdMp] = React.useState("");
 
-  const [mpKey, setMpKey] = React.useState("");
-  const [mpLote, setMpLote] = React.useState("");
-  const [lotePa, setLotePa] = React.useState("");
-  const [qtdPa, setQtdPa] = React.useState("");
-
+  const [listaUnificada, setListaUnificada] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState("");
   const [ok, setOk] = React.useState("");
 
-  const [produtos, setProdutos] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const entradas = React.useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem(ENTRADAS)) ?? [];
-    } catch {
-      return [];
-    }
+  // 1. Busca dados de Produtos e MPs para exibir na tabela
+  React.useEffect(() => {
+    fetchDados();
   }, []);
 
-  React.useEffect(() => {
+  async function fetchDados() {
     try {
-      localStorage.setItem(STORAGE, JSON.stringify(produtos));
-    } catch {}
-  }, [produtos]);
+      // Faz as duas requisições em paralelo
+      const [resProd, resMp] = await Promise.all([
+        api.get("/produtos"),
+        api.get("/materias-primas")
+      ]);
 
-  const materiais = React.useMemo(() => {
-    const map = new Map();
-    for (const e of entradas) {
-      const name = (e.item || "").trim();
-      const key = `${name.toLowerCase()}||${e.unidade}`;
-      const tot = Number(e.quantidade || 0);
-      if (!name || !e.unidade || !isFinite(tot)) continue;
-      const prev = map.get(key) || { nome: name, un: e.unidade, total: 0 };
-      prev.total += tot;
-      map.set(key, prev);
+      // Formata Produtos (PA) do backend
+      const produtosPA = (resProd.data.produtos || []).map(p => ({
+        id: `PA-${p.id}`, // ID visual para diferenciar
+        realId: p.id,
+        nome: p.nome,
+        un: "un", // O backend Produto não tem campo unidade, assumindo 'un'
+        tipo: "pa",
+        saldo: p.quantidade,
+        lote: "-" // Produto no backend é somatório, o lote é gerado na Produção
+      }));
+
+      // Formata Matérias-Primas (MP) do backend
+      const materiasMP = (resMp.data.materiasPrimas || []).map(m => ({
+        id: `MP-${m.id}`,
+        realId: m.id,
+        nome: m.nome,
+        un: m.unidadeMedida,
+        tipo: "mp",
+        saldo: m.quantidade,
+        lote: m.lote
+      }));
+
+      // Junta as listas
+      setListaUnificada([...produtosPA, ...materiasMP]);
+
+    } catch (error) {
+      console.error("Erro ao buscar dados", error);
     }
-    return Array.from(map.values()).filter((m) => m.total > 0);
-  }, [entradas]);
-
-  const lotesMp = React.useMemo(() => {
-    if (!mpKey) return [];
-    const [nomeLower, unSel] = mpKey.split("||");
-    const acc = new Map();
-    for (const e of entradas) {
-      const itemLower = (e.item || "").trim().toLowerCase();
-      if (itemLower === nomeLower && e.unidade === unSel) {
-        const qtd = Number(e.quantidade || 0);
-        const k = (e.lote || "").trim();
-        if (!k) continue;
-        const prev = acc.get(k) || 0;
-        acc.set(k, prev + (isFinite(qtd) ? qtd : 0));
-      }
-    }
-    return Array.from(acc.entries())
-      .filter(([, tot]) => tot > 0)
-      .map(([lote, total]) => ({ lote, total, un: unSel }));
-  }, [mpKey, entradas]);
-
-  React.useEffect(() => {
-    if (mpLote && !lotesMp.find((l) => l.lote === mpLote)) setMpLote("");
-  }, [mpKey, lotesMp, mpLote]);
-
-  function totalEntrada(nomeRef, unRef) {
-    const n = nomeRef.trim().toLowerCase();
-    return entradas
-      .filter(
-        (e) =>
-          e.unidade === unRef &&
-          (e.item || "").trim().toLowerCase() === n
-      )
-      .reduce((s, e) => s + Number(e.quantidade || 0), 0);
   }
 
-  function salvar() {
+  // 2. Salvar
+  async function salvar() {
     setErr("");
     setOk("");
+    setLoading(true);
 
-    if (!nome.trim()) return setErr("Informe o nome do produto.");
-    if (!un) return setErr("Selecione a unidade.");
-
-    let mpNome = "",
-      mpUn = "",
-      mpL = "",
-      lotePA = "",
-      qtdPA = 0,
-      mpId = null;
-
-    if (tipo === "pa") {
-      if (!mpKey) return setErr("Selecione a matéria-prima.");
-      if (!mpLote) return setErr("Selecione o lote da matéria-prima.");
-      if (!lotePa.trim())
-        return setErr("Defina o novo lote do produto acabado.");
-      const nQtd = Number(qtdPa);
-      if (!qtdPa || isNaN(nQtd) || nQtd <= 0) {
-        return setErr(
-          "Informe a quantidade a produzir (maior que zero)."
-        );
-      }
-
-      const [nomeLower, unSel] = mpKey.split("||");
-      mpUn = unSel;
-      mpNome =
-        materiais.find(
-          (m) =>
-            m.un === unSel && m.nome.toLowerCase() === nomeLower
-        )?.nome || "";
-      mpL = mpLote.trim();
-      lotePA = lotePa.trim();
-      qtdPA = nQtd;
-
-      const mpProd = produtos.find(
-        (p) =>
-          p.tipo === "mp" &&
-          p.un === mpUn &&
-          (p.nome || "").trim().toLowerCase() ===
-            (mpNome || "").trim().toLowerCase()
-      );
-      if (mpProd) {
-        mpId = mpProd.id;
-      }
+    if (!nome.trim()) {
+      setLoading(false);
+      return setErr("Informe o nome.");
     }
 
-    const nomeLower = nome.trim().toLowerCase();
-    const exists = produtos.some((p) => {
-      if (p.tipo === "mp" && tipo === "mp") {
-        return p.un === un && p.nome.trim().toLowerCase() === nomeLower;
+    try {
+      // Pega o ID do usuário (necessário para alguns endpoints se não pegar do token)
+      // O seu backend controller pega do req.user.id (AuthMiddleware), então o body é mais limpo.
+      
+      if (tipo === "pa") {
+        // === Cadastrar PRODUTO ACABADO ===
+        // Endpoint: POST /produtos
+        // Body esperado: { nome, quantidade } (UsuarioID vem do token)
+        
+        await api.post("/produtos", {
+          nome: nome.trim(),
+          quantidade: 0 // Começa com 0, aumenta via Produção
+        });
+        
+        setOk(`Produto "${nome}" cadastrado com sucesso.`);
+
+      } else {
+        // === Cadastrar MATÉRIA-PRIMA ===
+        // Endpoint: POST /materias-primas
+        if (!loteMp.trim() || !qtdMp) {
+          setLoading(false);
+          return setErr("Para MP, informe Lote e Quantidade Inicial.");
+        }
+
+        await api.post("/materias-primas", {
+          nome: nome.trim(),
+          quantidade: Number(qtdMp),
+          unidadeMedida: un,
+          lote: loteMp.trim()
+        });
+
+        setOk(`Matéria-prima "${nome}" cadastrada com sucesso.`);
       }
-      if (p.tipo === "pa" && tipo === "pa") {
-        return (
-          p.un === un &&
-          p.nome.trim().toLowerCase() === nomeLower &&
-          (p.lotePa || "").trim().toLowerCase() === lotePA.toLowerCase()
-        );
-      }
-      return false;
-    });
 
-    if (exists)
-      return setErr(
-        tipo === "pa"
-          ? "Já existe este produto acabado com o mesmo lote."
-          : "Já existe uma matéria-prima com esse nome e unidade."
-      );
+      // Limpa formulário
+      setNome("");
+      setLoteMp("");
+      setQtdMp("");
+      
+      // Atualiza tabela
+      fetchDados();
 
-    const novo = {
-      id: Date.now(),
-      nome: nome.trim(),
-      un,
-      tipo,
-      mpNome,
-      mpUn,
-      mpLote: mpL,
-      lotePa: lotePA,
-      qtdPa: qtdPA,
-      mpId,
-    };
-
-    setProdutos([novo, ...produtos]);
-    setOk("Produto cadastrado.");
-    setNome("");
-    setUn("un");
-    setTipo("mp");
-    setMpKey("");
-    setMpLote("");
-    setLotePa("");
-    setQtdPa("");
+    } catch (error) {
+      const msg = error.response?.data?.error || "Erro ao salvar.";
+      setErr(msg);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function remover(id) {
-    setProdutos(produtos.filter((p) => p.id !== id));
+  // Função auxiliar para deletar (opcional, se tiver endpoint)
+  async function remover(item) {
+    if(!confirm("Deseja realmente excluir?")) return;
+    
+    try {
+      if (item.tipo === "pa") {
+        await api.delete(`/produtos/${item.realId}`);
+      } else {
+        await api.delete(`/materias-primas/${item.realId}`);
+      }
+      fetchDados();
+    } catch (error) {
+      alert("Erro ao excluir: " + (error.response?.data?.error || "Erro desconhecido"));
+    }
   }
 
   return (
@@ -585,152 +549,108 @@ function CadastroProdutos({ onClose }) {
         className="form-grid form-produto"
       >
         <div className="field full">
-          <label className="label">Nome do produto</label>
+          <label className="label">Nome do Item</label>
           <input
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="Ex.: Parafuso 1/4 zincado"
+            placeholder="Ex.: Parafuso ou Caixa Acabada"
+            disabled={loading}
           />
         </div>
 
         <div className="field">
-          <label className="label">Unidade</label>
-          <select value={un} onChange={(e) => setUn(e.target.value)}>
-            <option value="t">Toneladas (t)</option>
-            <option value="kg">Quilos (kg)</option>
-            <option value="g">Gramas (g)</option>
-            <option value="mg">Miligramas (mg)</option>
-            <option value="un">Unidade (un)</option>
+          <label className="label">Tipo</label>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)} disabled={loading}>
+            <option value="pa">Produto Acabado</option>
+            <option value="mp">Matéria-prima</option>
           </select>
         </div>
 
         <div className="field">
-          <label className="label">Tipo</label>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            <option value="mp">Matéria-prima</option>
-            <option value="pa">Produto acabado</option>
+          <label className="label">Unidade</label>
+          <select value={un} onChange={(e) => setUn(e.target.value)} disabled={loading}>
+            <option value="un">Unidade (un)</option>
+            <option value="kg">Quilos (kg)</option>
+            <option value="t">Toneladas (t)</option>
+            <option value="g">Gramas (g)</option>
           </select>
         </div>
 
-        {tipo === "pa" && (
+        {/* Campos condicionais se for Matéria Prima (Backend exige lote na criação) */}
+        {tipo === "mp" && (
           <>
             <div className="field">
-              <label className="label">Matéria-prima (em estoque)</label>
-              <select
-                value={mpKey}
-                onChange={(e) => setMpKey(e.target.value)}
-                disabled={materiais.length === 0}
-              >
-                <option value="">
-                  {materiais.length ? "Selecione..." : "Sem estoque de MP"}
-                </option>
-                {materiais.map((m) => {
-                  const key = `${m.nome.toLowerCase()}||${m.un}`;
-                  return (
-                    <option key={key} value={key}>
-                      {`${m.nome} (${m.un}) — ${m.total} ${m.un}`}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div className="field">
-              <label className="label">Lote da MP</label>
-              <select
-                value={mpLote}
-                onChange={(e) => setMpLote(e.target.value)}
-                disabled={!mpKey || lotesMp.length === 0}
-              >
-                <option value="">
-                  {!mpKey || lotesMp.length === 0
-                    ? "Selecione a MP"
-                    : "Selecione..."}
-                </option>
-                {lotesMp.map((l) => (
-                  <option key={l.lote} value={l.lote}>
-                    {`${l.lote} — ${l.total} ${l.un}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field">
-              <label className="label">Lote do produto (novo)</label>
+              <label className="label">Lote Inicial</label>
               <input
-                value={lotePa}
-                onChange={(e) => setLotePa(e.target.value)}
-                placeholder="Ex.: L-PA-0001"
+                value={loteMp}
+                onChange={(e) => setLoteMp(e.target.value)}
+                placeholder="Lote..."
+                disabled={loading}
               />
             </div>
-
             <div className="field">
-              <label className="label">Qtd a produzir</label>
+              <label className="label">Qtd Inicial</label>
               <input
                 type="number"
-                step="any"
-                value={qtdPa}
-                onChange={(e) => setQtdPa(e.target.value)}
-                placeholder="Ex.: 100"
+                value={qtdMp}
+                onChange={(e) => setQtdMp(e.target.value)}
+                placeholder="0"
+                disabled={loading}
               />
             </div>
           </>
         )}
 
-        {err && <div className="alert error full">{err}</div>}
-        {ok && (
-          <div className="alert ok full">
-            ✅ {ok}
+        {/* Aviso se for PA */}
+        {tipo === "pa" && (
+          <div className="field full info-text" style={{fontSize: '0.85rem', color: '#888', fontStyle: 'italic'}}>
+            ℹ️ Produtos Acabados começam com estoque 0. Use a tela de <b>Produção</b> para gerar estoque consumindo matéria-prima.
           </div>
         )}
 
+        {err && <div className="alert error full">{err}</div>}
+        {ok && <div className="alert ok full">✅ {ok}</div>}
+
         <div className="actions full">
-          <button type="button" className="ghost-btn" onClick={onClose}>
+          <button type="button" className="ghost-btn" onClick={onClose} disabled={loading}>
             Fechar
           </button>
-          <button type="submit" className="btn small">
-            Salvar
+          <button type="submit" className="btn small" disabled={loading}>
+            {loading ? "Salvando..." : "Cadastrar"}
           </button>
         </div>
       </form>
 
       <div className="recent-card">
-        <div className="recent-head">Produtos cadastrados</div>
-        {produtos.length === 0 ? (
-          <div className="side-empty">Nenhum produto cadastrado.</div>
+        <div className="recent-head">Produtos e MPs Cadastrados</div>
+        {listaUnificada.length === 0 ? (
+          <div className="side-empty">Nenhum item cadastrado.</div>
         ) : (
           <div className="table-like">
             <div className="t-prod-head">
               <span>Nome</span>
-              <span>Un</span>
               <span>Tipo</span>
-              <span>MP vinculada</span>
-              <span>Lote MP</span>
-              <span>Lote PA</span>
-              <span>Qtd PA</span>
-              <span>Entradas</span>
+              <span>Un</span>
+              <span>Lote Atual</span>
+              <span>Saldo Total</span>
               <span>Ações</span>
             </div>
-            {produtos.map((p) => (
+            {listaUnificada.map((p) => (
               <div key={p.id} className="t-prod-row">
                 <span>{p.nome}</span>
+                <span>
+                  {p.tipo === "mp" ? <span className="badge mp">MP</span> : <span className="badge pa">PA</span>}
+                </span>
                 <span>{p.un}</span>
-                <span>
-                  {p.tipo === "mp" ? "Matéria-prima" : "Produto acabado"}
-                </span>
-                <span>
-                  {p.tipo === "pa" ? `${p.mpNome} (${p.mpUn})` : "-"}
-                </span>
-                <span>{p.tipo === "pa" ? p.mpLote || "-" : "-"}</span>
-                <span>{p.tipo === "pa" ? p.lotePa || "-" : "-"}</span>
-                <span>{p.tipo === "pa" ? p.qtdPa ?? "-" : "-"}</span>
-                <span>{totalEntrada(p.nome, p.un)} {p.un}</span>
+                <span>{p.lote}</span>
+                <span>{p.saldo}</span>
                 <span>
                   <button
                     className="ghost-btn"
-                    onClick={() => remover(p.id)}
+                    onClick={() => remover(p)}
+                    title="Excluir"
                   >
-                    Excluir
+                    🗑️
                   </button>
                 </span>
               </div>
@@ -742,352 +662,200 @@ function CadastroProdutos({ onClose }) {
   );
 }
 
-/* ======= TELA: EXECUÇÃO DE PRODUÇÃO ======= */
+/* ======= TELA: EXECUÇÃO DE PRODUÇÃO (INTEGRADA) ======= */
 function ExecProducao({ onClose }) {
-  const STORAGE_PROD = "translot_produtos";
-  const STORAGE_MOV = "translot_mov_entradas";
-  const STORAGE_PRODUCOES = "translot_mov_producao";
+  // Listas para os Selects
+  const [listaPA, setListaPA] = React.useState([]);
+  const [listaMP, setListaMP] = React.useState([]);
+  const [historicoProducao, setHistoricoProducao] = React.useState([]);
 
-  const [produtos, setProdutos] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_PROD)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [movs, setMovs] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_MOV)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [producoes, setProducoes] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_PRODUCOES)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const produtosPA = React.useMemo(
-    () => produtos.filter((p) => p.tipo === "pa"),
-    [produtos]
-  );
-  const produtosMP = React.useMemo(
-    () => produtos.filter((p) => p.tipo === "mp"),
-    [produtos]
-  );
-
+  // Form States
   const [produtoPaId, setProdutoPaId] = React.useState("");
   const [qtdPa, setQtdPa] = React.useState("");
-  const [mpId, setMpId] = React.useState("");
-  const [mpLote, setMpLote] = React.useState("");
+  const [mpId, setMpId] = React.useState(""); // ID da MP selecionada
   const [qtdMp, setQtdMp] = React.useState("");
-  const [lotePa, setLotePa] = React.useState(() => gerarLotePa());
+  
+  const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState("");
   const [ok, setOk] = React.useState("");
 
+  // 1. Carregar dados ao abrir
   React.useEffect(() => {
-    if (!produtoPaId) return;
+    carregarDados();
+  }, []);
 
-    const pa = produtosPA.find((p) => String(p.id) === String(produtoPaId));
-    if (!pa) return;
+  async function carregarDados() {
+    try {
+      const [resProd, resMp, resHist] = await Promise.all([
+        api.get("/produtos"),        // Para popular o select de Produto Acabado
+        api.get("/materias-primas"), // Para popular o select de Matéria Prima
+        api.get("/producoes")         // Para mostrar a tabela de histórico recente
+      ]);
 
-    if (pa.mpId) {
-      setMpId(String(pa.mpId));
-    } else if (pa.mpNome && pa.mpUn) {
-      const mp = produtosMP.find(
-        (m) =>
-          m.tipo === "mp" &&
-          (m.nome || "").trim().toLowerCase() ===
-            pa.mpNome.trim().toLowerCase() &&
-          m.un === pa.mpUn
-      );
-      if (mp) setMpId(String(mp.id));
+      setListaPA(resProd.data.produtos || []);
+      setListaMP(resMp.data.materiasPrimas || []);
+      setHistoricoProducao(resHist.data.producoes || []);
+
+    } catch (error) {
+      console.error("Erro ao carregar dados de produção:", error);
+      setErr("Falha ao carregar listas do servidor.");
     }
-
-    if (pa.qtdPa && !qtdPa) {
-      setQtdPa(String(pa.qtdPa));
-    }
-
-    if (pa.mpLote && !mpLote) {
-      setMpLote(pa.mpLote);
-    }
-  }, [produtoPaId, produtosPA, produtosMP, qtdPa, mpLote]);
-
-  function gerarLotePa() {
-    const now = new Date();
-    const data = [
-      now.getFullYear(),
-      String(now.getMonth() + 1).padStart(2, "0"),
-      String(now.getDate()).padStart(2, "0"),
-    ].join("");
-    const rand = String(Math.floor(Math.random() * 9999)).padStart(4, "0");
-    return `L-PA-${data}-${rand}`;
   }
 
-  const lotesMp = React.useMemo(() => {
-    if (!mpId) return [];
-    const mp = produtosMP.find((p) => String(p.id) === String(mpId));
-    if (!mp) return [];
-
-    const nomeLower = (mp.nome || "").trim().toLowerCase();
-    const un = mp.un;
-
-    const mapa = new Map();
-    for (const m of movs) {
-      const itemLower = (m.item || "").trim().toLowerCase();
-      if (itemLower === nomeLower && m.unidade === un) {
-        const lote = (m.lote || "").trim();
-        if (!lote) continue;
-        const qtd = Number(m.quantidade || 0);
-        const atual = mapa.get(lote) || 0;
-        mapa.set(lote, atual + (isFinite(qtd) ? qtd : 0));
-      }
-    }
-
-    return Array.from(mapa.entries())
-      .filter(([, tot]) => tot > 0)
-      .map(([lote, total]) => ({ lote, total, un }));
-  }, [mpId, movs, produtosMP]);
-
-  React.useEffect(() => {
-    if (mpLote && !lotesMp.find((l) => l.lote === mpLote)) {
-      setMpLote("");
-    }
-  }, [mpLote, lotesMp]);
-
-  function handleProduzir(e) {
+  // 2. Enviar Produção
+  async function handleProduzir(e) {
     e.preventDefault();
     setErr("");
     setOk("");
 
     if (!produtoPaId) return setErr("Selecione o produto acabado.");
-    if (!qtdPa || Number(qtdPa) <= 0)
-      return setErr("Informe a quantidade a produzir.");
+    if (!qtdPa || Number(qtdPa) <= 0) return setErr("Informe a quantidade a produzir.");
     if (!mpId) return setErr("Selecione a matéria-prima.");
-    if (!mpLote) return setErr("Selecione o lote da matéria-prima.");
-    if (!qtdMp || Number(qtdMp) <= 0)
-      return setErr("Informe a quantidade de MP a consumir.");
-    if (!lotePa.trim())
-      return setErr("Defina/ajuste o lote do produto acabado.");
+    if (!qtdMp || Number(qtdMp) <= 0) return setErr("Informe a quantidade de MP a consumir.");
 
-    const pa = produtosPA.find((p) => String(p.id) === String(produtoPaId));
-    const mp = produtosMP.find((p) => String(p.id) === String(mpId));
-    if (!pa || !mp)
-      return setErr("Produto acabado ou matéria-prima inválidos.");
+    setLoading(true);
 
-    const qtdMpNum = Number(qtdMp);
-    const qtdPaNum = Number(qtdPa);
+    try {
+      // Formato exigido pelo Backend (ProducaoController -> ProducaoService)
+      const payload = {
+        produtoId: Number(produtoPaId),
+        quantidadeProduzida: Number(qtdPa),
+        // O backend espera um array de matérias-primas
+        materiasPrimas: [
+          {
+            id: Number(mpId),
+            quantidadeUsada: Number(qtdMp)
+          }
+        ]
+        // usuarioId é pego automaticamente pelo token no backend
+      };
 
-    const estoqueLote = lotesMp.find((l) => l.lote === mpLote)?.total ?? 0;
-    if (qtdMpNum > estoqueLote) {
-      return setErr(
-        `Estoque insuficiente no lote ${mpLote}. Disponível: ${estoqueLote} ${mp.un}.`
-      );
+      const response = await api.post("/producoes", payload);
+
+      setOk(`Produção registrada com sucesso! Lote Gerado: ${response.data.lote}`);
+      
+      // Limpa formulário
+      setQtdPa("");
+      setQtdMp("");
+      
+      // Recarrega histórico e saldos (opcional, mas bom para atualizar a UI se tivesse saldo visível)
+      carregarDados();
+
+    } catch (apiError) {
+      console.error(apiError);
+      // Tenta pegar a mensagem específica do backend (ex: "Estoque insuficiente")
+      const msg = apiError.response?.data?.error || "Erro ao registrar produção.";
+      setErr(msg);
+    } finally {
+      setLoading(false);
     }
-
-    const now = new Date().toISOString();
-
-    const movConsumoMp = {
-      id: Date.now(),
-      item: mp.nome,
-      quantidade: -qtdMpNum,
-      unidade: mp.un,
-      lote: mpLote,
-      fabricante: "",
-      data: now,
-      tipoMov: "consumo_producao",
-    };
-
-    const movEntradaPa = {
-      id: Date.now() + 1,
-      item: pa.nome,
-      quantidade: qtdPaNum,
-      unidade: pa.un,
-      lote: lotePa.trim(),
-      fabricante: "",
-      data: now,
-      tipoMov: "producao",
-    };
-
-    const novosMovs = [movEntradaPa, movConsumoMp, ...movs];
-    setMovs(novosMovs);
-    try {
-      localStorage.setItem(STORAGE_MOV, JSON.stringify(novosMovs));
-    } catch {}
-
-    const producao = {
-      id: Date.now(),
-      data: now,
-      produtoId: pa.id,
-      produtoNome: pa.nome,
-      paUn: pa.un,
-      lotePa: lotePa.trim(),
-      qtdPa: qtdPaNum,
-      mpId: mp.id,
-      mpNome: mp.nome,
-      mpUn: mp.un,
-      mpLote,
-      qtdMp: qtdMpNum,
-    };
-
-    const novasProducoes = [producao, ...producoes];
-    setProducoes(novasProducoes);
-    try {
-      localStorage.setItem(
-        STORAGE_PRODUCOES,
-        JSON.stringify(novasProducoes)
-      );
-    } catch {}
-
-    setOk("Produção registrada com sucesso.");
-    setQtdPa("");
-    setQtdMp("");
-    setLotePa(gerarLotePa());
   }
 
   return (
     <div className="modal-form">
       <form onSubmit={handleProduzir} className="form-grid form-producao">
+        
+        {/* === ÁREA DO PRODUTO ACABADO === */}
         <div className="field full">
-          <label className="label">Produto acabado</label>
+          <label className="label">Produto Acabado (O que vai entrar no estoque)</label>
           <select
             value={produtoPaId}
             onChange={(e) => setProdutoPaId(e.target.value)}
+            disabled={loading}
           >
-            <option value="">
-              {produtosPA.length
-                ? "Selecione..."
-                : "Nenhum produto acabado cadastrado"}
-            </option>
-            {produtosPA.map((p) => (
+            <option value="">Selecione...</option>
+            {listaPA.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.nome} ({p.un})
+                {p.nome} (Saldo atual: {p.quantidade})
               </option>
             ))}
           </select>
         </div>
 
         <div className="field">
-          <label className="label">Qtd a produzir</label>
+          <label className="label">Qtd a Produzir</label>
           <input
             type="number"
             step="any"
             value={qtdPa}
             onChange={(e) => setQtdPa(e.target.value)}
             placeholder="Ex.: 10"
+            disabled={loading}
           />
         </div>
 
         <div className="field">
-          <label className="label">Lote do produto (auto)</label>
-          <input
-            value={lotePa}
-            onChange={(e) => setLotePa(e.target.value)}
-          />
+          <label className="label">Lote (Gerado Automático)</label>
+          <input value="Automático pelo Sistema" disabled style={{ color: "#888", fontStyle: "italic" }} />
         </div>
 
         <div className="field full">
           <hr className="field-separator" />
+          <p style={{fontSize: '0.85rem', color: '#aaa', marginBottom: '10px'}}>Consumo de Matéria-Prima</p>
         </div>
 
+        {/* === ÁREA DA MATÉRIA PRIMA === */}
         <div className="field">
-          <label className="label">Matéria-prima</label>
+          <label className="label">Matéria-prima (O que vai sair)</label>
           <select
             value={mpId}
             onChange={(e) => setMpId(e.target.value)}
+            disabled={loading}
           >
-            <option value="">
-              {produtosMP.length
-                ? "Selecione..."
-                : "Nenhuma matéria-prima cadastrada"}
-            </option>
-            {produtosMP.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome} ({p.un})
+            <option value="">Selecione...</option>
+            {listaMP.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nome} (Lote: {m.lote} | Saldo: {m.quantidade} {m.unidadeMedida})
               </option>
             ))}
           </select>
         </div>
 
         <div className="field">
-          <label className="label">Lote da MP</label>
-          <select
-            value={mpLote}
-            onChange={(e) => setMpLote(e.target.value)}
-            disabled={!mpId || lotesMp.length === 0}
-          >
-            <option value="">
-              {!mpId || lotesMp.length === 0
-                ? "Selecione a MP"
-                : "Selecione o lote"}
-            </option>
-            {lotesMp.map((l) => (
-              <option key={l.lote} value={l.lote}>
-                {l.lote} — {l.total} {l.un}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="field">
-          <label className="label">Qtd MP a consumir</label>
+          <label className="label">Qtd a Consumir</label>
           <input
             type="number"
             step="any"
             value={qtdMp}
             onChange={(e) => setQtdMp(e.target.value)}
             placeholder="Ex.: 5"
+            disabled={loading}
           />
         </div>
 
         {err && <div className="alert error full">{err}</div>}
-        {ok && (
-          <div className="alert ok full">
-            ✅ {ok}
-          </div>
-        )}
+        {ok && <div className="alert ok full">✅ {ok}</div>}
 
         <div className="actions full">
-          <button type="button" className="ghost-btn" onClick={onClose}>
+          <button type="button" className="ghost-btn" onClick={onClose} disabled={loading}>
             Fechar
           </button>
-          <button type="submit" className="btn small">
-            Registrar produção
+          <button type="submit" className="btn small" disabled={loading}>
+            {loading ? "Registrando..." : "Confirmar Produção"}
           </button>
         </div>
       </form>
 
       <div className="recent-card">
-        <div className="recent-head">Últimas produções</div>
-        {producoes.length === 0 ? (
+        <div className="recent-head">Histórico de Produção</div>
+        {historicoProducao.length === 0 ? (
           <div className="side-empty">Nenhuma produção registrada.</div>
         ) : (
           <div className="table-like">
             <div className="t-head">
               <span>Data</span>
               <span>Produto</span>
-              <span>Lote PA</span>
-              <span>Qtd PA</span>
-              <span>MP / lote</span>
-              <span>Qtd MP</span>
+              <span>Lote Gerado</span>
+              <span>Qtd Produzida</span>
+              <span>Responsável</span>
             </div>
-            {producoes.map((p) => (
+            {historicoProducao.map((p) => (
               <div key={p.id} className="t-row">
-                <span>{new Date(p.data).toLocaleString()}</span>
-                <span>{p.produtoNome}</span>
-                <span>{p.lotePa}</span>
-                <span>{p.qtdPa}</span>
-                <span>
-                  {p.mpNome} ({p.mpLote})
-                </span>
-                <span>
-                  {p.qtdMp} {p.mpUn}
-                </span>
+                <span>{new Date(p.dataProducao).toLocaleString()}</span>
+                <span>{p.produto?.nome || "Produto Deletado"}</span>
+                <span>{p.lote}</span>
+                <span style={{ color: "#4caf50", fontWeight: "bold" }}>+{p.quantidadeProduzida}</span>
+                <span>{p.usuario?.nome || "-"}</span>
               </div>
             ))}
           </div>
@@ -1144,158 +912,86 @@ function ConfigTheme({ theme, onChangeTheme }) {
   );
 }
 
-/* ======= TELA: ESTOQUE ======= */
+/* ======= TELA: ESTOQUE (INTEGRADA) ======= */
 function Estoque({ onClose }) {
-  const STORAGE_PROD = "translot_produtos";
-  const STORAGE_MOV = "translot_mov_entradas";
-  const STORAGE_PRODUCOES = "translot_mov_producao";
-
-  const [produtos] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_PROD)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [movs] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_MOV)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [producoes] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_PRODUCOES)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
-  const indexProdLote = React.useMemo(() => {
-    const map = new Map();
-    for (const p of producoes) {
-      const key = `${String(p.produtoId)}||${(p.lotePa || "").trim().toLowerCase()}`;
-      if (!map.has(key)) map.set(key, p);
-    }
-    return map;
-  }, [producoes]);
-
-  const linhasBase = React.useMemo(() => {
-    const resultado = [];
-
-    for (const prod of produtos) {
-      const nomeLower = (prod.nome || "").trim().toLowerCase();
-      const un = prod.un;
-      if (!nomeLower || !un) continue;
-
-      const mapaLotes = new Map();
-
-      for (const m of movs) {
-        const itemLower = (m.item || "").trim().toLowerCase();
-        if (itemLower !== nomeLower) continue;
-        if (m.unidade !== un) continue;
-
-        const lote = (m.lote || "").trim() || "-";
-        const qtd = Number(m.quantidade || 0);
-        if (!isFinite(qtd)) continue;
-
-        const atual = mapaLotes.get(lote) || 0;
-        mapaLotes.set(lote, atual + qtd);
-      }
-
-      if (mapaLotes.size === 0) {
-        resultado.push({
-          idProduto: prod.id,
-          nome: prod.nome,
-          tipo: prod.tipo,
-          un: prod.un,
-          lote: "-",
-          saldo: 0,
-          mpNome: "-",
-          mpLote: "-",
-        });
-        continue;
-      }
-
-      for (const [lote, saldo] of mapaLotes.entries()) {
-        const linha = {
-          idProduto: prod.id,
-          nome: prod.nome,
-          tipo: prod.tipo,
-          un: prod.un,
-          lote,
-          saldo,
-          mpNome: "-",
-          mpLote: "-",
-        };
-
-        if (prod.tipo === "pa") {
-          const key = `${String(prod.id)}||${lote.trim().toLowerCase()}`;
-          const hist = indexProdLote.get(key);
-          if (hist) {
-            linha.mpNome = hist.mpNome || "-";
-            linha.mpLote = hist.mpLote || "-";
-          }
-        }
-
-        resultado.push(linha);
-      }
-    }
-
-    return resultado;
-  }, [produtos, movs, indexProdLote]);
-
+  const [itens, setItens] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  
+  // Filtros
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [searchField, setSearchField] = React.useState("nome");
-  const [filtroTipo, setFiltroTipo] = React.useState("todos");
+  const [filtroTipo, setFiltroTipo] = React.useState("todos"); // todos | mp | pa
 
-  const linhasFiltradas = React.useMemo(() => {
-    let base = [...linhasBase];
+  React.useEffect(() => {
+    fetchEstoque();
+  }, []);
 
-    if (filtroTipo !== "todos") base = base.filter((l) => l.tipo === filtroTipo);
+  async function fetchEstoque() {
+    try {
+      setLoading(true);
+      const [resProd, resMp] = await Promise.all([
+        api.get("/produtos"),
+        api.get("/materias-primas")
+      ]);
 
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) return base;
+      // Formata Produtos Acabados (PA)
+      // No backend, Produto = SKU único com saldo total
+      const listaPA = (resProd.data.produtos || []).map(p => ({
+        uniqueId: `PA-${p.id}`,
+        nome: p.nome,
+        tipo: "pa",
+        un: "un", // Assumindo padrão, já que o model Produto não tem unidade
+        lote: "Saldo Total", // PA no banco é agrupado
+        saldo: p.quantidade
+      }));
 
-    if (searchField === "lote") {
-      return base.filter((l) =>
-        (l.lote || "").toLowerCase().includes(term)
-      );
+      // Formata Matérias-Primas (MP)
+      // No backend, cada entrada de MP é um registro com lote
+      const listaMP = (resMp.data.materiasPrimas || []).map(m => ({
+        uniqueId: `MP-${m.id}`,
+        nome: m.nome,
+        tipo: "mp",
+        un: m.unidadeMedida,
+        lote: m.lote,
+        saldo: m.quantidade
+      }));
+
+      // Junta tudo
+      setItens([...listaPA, ...listaMP]);
+
+    } catch (error) {
+      console.error("Erro ao buscar estoque:", error);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    return base.filter((l) =>
-      (l.nome || "").toLowerCase().includes(term)
-    );
-  }, [linhasBase, filtroTipo, searchField, searchTerm]);
+  // Lógica de Filtragem no Frontend
+  const itensFiltrados = React.useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    
+    return itens.filter(item => {
+      // 1. Filtro por Tipo
+      if (filtroTipo !== "todos" && item.tipo !== filtroTipo) return false;
+
+      // 2. Busca por Nome ou Lote
+      const matchNome = item.nome.toLowerCase().includes(term);
+      const matchLote = item.lote.toLowerCase().includes(term);
+      
+      return matchNome || matchLote;
+    });
+  }, [itens, searchTerm, filtroTipo]);
 
   return (
     <div className="modal-form">
+      {/* --- ÁREA DE FILTROS --- */}
       <div className="form-grid form-estoque-filtros">
         <div className="field full">
-          <label className="label">Pesquisar</label>
+          <label className="label">Pesquisar (Nome ou Lote)</label>
           <input
-            placeholder={
-              searchField === "nome"
-                ? "Digite o nome do item..."
-                : "Digite o lote..."
-            }
+            placeholder="Digite para filtrar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
-
-        <div className="field">
-          <label className="label">Pesquisar por</label>
-          <select
-            value={searchField}
-            onChange={(e) => setSearchField(e.target.value)}
-          >
-            <option value="nome">Nome</option>
-            <option value="lote">Lote</option>
-          </select>
         </div>
 
         <div className="field">
@@ -1304,48 +1000,60 @@ function Estoque({ onClose }) {
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
           >
-            <option value="todos">Todos</option>
-            <option value="mp">Somente matéria-prima</option>
-            <option value="pa">Somente produto acabado</option>
+            <option value="todos">Todos os Itens</option>
+            <option value="mp">Matérias-primas</option>
+            <option value="pa">Produtos Acabados</option>
           </select>
+        </div>
+        
+        <div className="field" style={{display: 'flex', alignItems: 'flex-end'}}>
+           <button type="button" className="ghost-btn" onClick={fetchEstoque} title="Atualizar Lista">
+             🔄 Atualizar
+           </button>
         </div>
       </div>
 
+      {/* --- TABELA DE ESTOQUE --- */}
       <div className="recent-card">
-        <div className="recent-head">Estoque por lote</div>
+        <div className="recent-head">
+          Posição de Estoque
+          {loading && <span style={{fontSize: '0.8rem', fontWeight: 'normal', marginLeft: 10}}> (Carregando...)</span>}
+        </div>
 
-        {linhasFiltradas.length === 0 ? (
+        {!loading && itensFiltrados.length === 0 ? (
           <div className="side-empty">
-            Nenhum item encontrado com os filtros atuais.
+            Nenhum item encontrado.
           </div>
         ) : (
           <div className="table-like">
             <div className="t-prod-head">
               <span>Nome</span>
               <span>Tipo</span>
-              <span>Un</span>
               <span>Lote</span>
               <span>Saldo</span>
-              <span>Matéria-prima usada</span>
-              <span>Lote da MP</span>
+              <span>Un</span>
             </div>
 
-            {linhasFiltradas.map((l, idx) => (
+            {itensFiltrados.map((item) => (
               <div
-                key={`${l.idProduto}-${l.lote}-${idx}`}
+                key={item.uniqueId}
                 className="t-prod-row"
+                style={{ 
+                    borderLeft: item.tipo === 'mp' ? '4px solid #ff9800' : '4px solid #4caf50' 
+                }}
               >
-                <span>{l.nome}</span>
+                <span style={{fontWeight: 'bold'}}>{item.nome}</span>
                 <span>
-                  {l.tipo === "mp" ? "Matéria-prima" : "Produto acabado"}
+                  {item.tipo === "mp" ? "Matéria-prima" : "Produto Acabado"}
                 </span>
-                <span>{l.un}</span>
-                <span>{l.lote}</span>
-                <span>
-                  {l.saldo} {l.un}
+                <span>{item.lote}</span>
+                <span style={{
+                    color: item.saldo > 0 ? 'inherit' : '#e53935',
+                    fontWeight: item.saldo > 0 ? 'normal' : 'bold'
+                }}>
+                    {item.saldo}
                 </span>
-                <span>{l.tipo === "pa" ? l.mpNome : "-"}</span>
-                <span>{l.tipo === "pa" ? l.mpLote : "-"}</span>
+                <span>{item.un}</span>
               </div>
             ))}
           </div>
