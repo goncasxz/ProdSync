@@ -19,7 +19,21 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+//SWAGGER
+const uiOptions = {
+  supportedSubmitMethods: [
+      'get',
+      'post',
+      'patch',
+      'head',
+      'options'
+      // 'delete',
+      // 'put' comentando para esperar aprovacao do Pedro sobre deixar o try it out desses liberados
+  ],
+};
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, uiOptions));
 
 const prisma = new PrismaClient();
 
