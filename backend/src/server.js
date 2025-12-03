@@ -69,7 +69,7 @@ app.use('/auth', createAuthRoutes({ authService }));
 app.use('/usuarios', createUsuarioRoutes({ usuarioService }));
 app.use('/produtos', createProdutoRoutes({ produtoService }));
 app.use('/materias-primas', createMateriaPrimaRoutes({ materiaPrimaService }));
-app.use('/producoes', createProducaoRoutes({ producaoService }));
+app.use('/producao', createProducaoRoutes({ producaoService }));
 app.get("/ping", (req, res) => res.json({ ok: true, msg: "Backend ativo" }));
 
 
