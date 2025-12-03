@@ -834,18 +834,6 @@ function ExecProducao({ onClose }) {
           />
         </div>
 
-        <div className="field">
-          <label className="label">Lote (Auto)</label>
-          <input value="Gerado pelo Sistema" disabled style={{ color: "#888", fontStyle: "italic" }} />
-        </div>
-
-        <div className="field full">
-          <hr className="field-separator" />
-          <p style={{fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 'bold', marginBottom: '10px'}}>
-            Ingredientes / Matérias-Primas
-          </p>
-        </div>
-
         {/* === SEÇÃO 2: ADICIONAR MPs (Staging Area) === */}
         <div className="field full" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: '10px', alignItems: 'end', background: 'rgba(0,0,0,0.03)', padding: '10px', borderRadius: '6px' }}>
             <div>
@@ -1103,10 +1091,19 @@ function Estoque({ onClose }) {
           </select>
         </div>
         
-        <div className="field" style={{display: 'flex', alignItems: 'flex-end'}}>
-           <button type="button" className="ghost-btn" onClick={fetchEstoque} title="Atualizar Lista">
-             🔄 Atualizar
-           </button>
+        <div className="field" style={{ gridColumn: '1 / -1' }}>
+          
+          {/* 2. Flexbox: Centraliza o botão horizontalmente no espaço disponível */}
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <button 
+              type="button" 
+              className="btn small" 
+              onClick={fetchEstoque} 
+              title="Atualizar Lista"
+            >
+              🔄 Atualizar Lista de Estoque
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1516,7 +1513,7 @@ function UsuariosSistema({ onClose }) {
         <div className="actions full">
           <button
             className="primary-btn"
-            style={{ width: '100%', padding: '10px', marginTop: '10px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ width: '100%', padding: '10px', marginTop: '10px', background: 'green', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
             type="button"
             onClick={salvarUsuario}
             disabled={loading}
