@@ -285,7 +285,6 @@ function EntradaProdutoForm({ onClose }) {
       setQtd("");
       setUn("kg");
       setLote("");
-      setFab(""); // Fabricante não foi enviado pois não tem no Model
       
       // Atualiza a tabela
       fetchMaterias();
@@ -349,17 +348,6 @@ function EntradaProdutoForm({ onClose }) {
           />
         </div>
         
-        {/* Campo visual apenas, backend não suporta Fabricante ainda */}
-        <div className="field">
-          <label className="label">Fabricante (Visual)</label>
-          <input
-            value={fab}
-            onChange={(e) => setFab(e.target.value)}
-            placeholder="Ex.: Aço Brasil S.A."
-            disabled={loading}
-          />
-        </div>
-
         {err && <div className="alert error full">{err}</div>}
         {ok && <div className="alert ok full">✅ {ok}</div>}
 
@@ -403,62 +391,40 @@ function EntradaProdutoForm({ onClose }) {
   );
 }
 
-/* ======= TELA: CADASTRO DE PRODUTOS (INTEGRADA) ======= */
+/* ======= TELA: CADASTRO DE PRODUTOS (AJUSTADA) ======= */
 
 function CadastroProdutos({ onClose }) {
   const [nome, setNome] = React.useState("");
   const [un, setUn] = React.useState("un");
-  const [tipo, setTipo] = React.useState("pa"); // pa (Produto) ou mp (Matéria Prima)
   
-  // Campos extras se for MP (pois o backend exige lote/qtd na criação de MP)
-  const [loteMp, setLoteMp] = React.useState("");
-  const [qtdMp, setQtdMp] = React.useState("");
-
-  const [listaUnificada, setListaUnificada] = React.useState([]);
+  // Lista apenas de Produtos Acabados
+  const [listaProdutos, setListaProdutos] = React.useState([]);
+  
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState("");
   const [ok, setOk] = React.useState("");
 
-  // 1. Busca dados de Produtos e MPs para exibir na tabela
+  // 1. Busca dados (SOMENTE PRODUTOS)
   React.useEffect(() => {
     fetchDados();
   }, []);
 
   async function fetchDados() {
     try {
-      // Faz as duas requisições em paralelo
-      const [resProd, resMp] = await Promise.all([
-        api.get("/produtos"),
-        api.get("/materias-primas")
-      ]);
-
+      const res = await api.get("/produtos");
+      
       // Formata Produtos (PA) do backend
-      const produtosPA = (resProd.data.produtos || []).map(p => ({
-        id: `PA-${p.id}`, // ID visual para diferenciar
-        realId: p.id,
+      const produtosPA = (res.data.produtos || []).map(p => ({
+        id: p.id,
         nome: p.nome,
-        un: "un", // O backend Produto não tem campo unidade, assumindo 'un'
-        tipo: "pa",
-        saldo: p.quantidade,
-        lote: "-" // Produto no backend é somatório, o lote é gerado na Produção
+        un: "un", // Padrão visual
+        saldo: p.quantidade
       }));
 
-      // Formata Matérias-Primas (MP) do backend
-      const materiasMP = (resMp.data.materiasPrimas || []).map(m => ({
-        id: `MP-${m.id}`,
-        realId: m.id,
-        nome: m.nome,
-        un: m.unidadeMedida,
-        tipo: "mp",
-        saldo: m.quantidade,
-        lote: m.lote
-      }));
-
-      // Junta as listas
-      setListaUnificada([...produtosPA, ...materiasMP]);
+      setListaProdutos(produtosPA);
 
     } catch (error) {
-      console.error("Erro ao buscar dados", error);
+      console.error("Erro ao buscar produtos", error);
     }
   }
 
@@ -474,46 +440,15 @@ function CadastroProdutos({ onClose }) {
     }
 
     try {
-      // Pega o ID do usuário (necessário para alguns endpoints se não pegar do token)
-      // O seu backend controller pega do req.user.id (AuthMiddleware), então o body é mais limpo.
-      
-      if (tipo === "pa") {
-        // === Cadastrar PRODUTO ACABADO ===
-        // Endpoint: POST /produtos
-        // Body esperado: { nome, quantidade } (UsuarioID vem do token)
-        
         await api.post("/produtos", {
           nome: nome.trim(),
-          quantidade: 0 // Começa com 0, aumenta via Produção
+          quantidade: 0
         });
         
         setOk(`Produto "${nome}" cadastrado com sucesso.`);
-
-      } else {
-        // === Cadastrar MATÉRIA-PRIMA ===
-        // Endpoint: POST /materias-primas
-        if (!loteMp.trim() || !qtdMp) {
-          setLoading(false);
-          return setErr("Para MP, informe Lote e Quantidade Inicial.");
-        }
-
-        await api.post("/materias-primas", {
-          nome: nome.trim(),
-          quantidade: Number(qtdMp),
-          unidadeMedida: un,
-          lote: loteMp.trim()
-        });
-
-        setOk(`Matéria-prima "${nome}" cadastrada com sucesso.`);
-      }
-
-      // Limpa formulário
-      setNome("");
-      setLoteMp("");
-      setQtdMp("");
-      
-      // Atualiza tabela
-      fetchDados();
+        setNome("");
+        setUn("un");
+        fetchDados();
 
     } catch (error) {
       const msg = error.response?.data?.error || "Erro ao salvar.";
@@ -523,19 +458,20 @@ function CadastroProdutos({ onClose }) {
     }
   }
 
-  // Função auxiliar para deletar (opcional, se tiver endpoint)
+  // 3. Remover
   async function remover(item) {
-    if(!confirm("Deseja realmente excluir?")) return;
+    if(!confirm(`Deseja excluir "${item.nome}"?`)) return;
     
     try {
-      if (item.tipo === "pa") {
-        await api.delete(`/produtos/${item.realId}`);
-      } else {
-        await api.delete(`/materias-primas/${item.realId}`);
-      }
+      await api.delete(`/produtos/${item.id}`);
       fetchDados();
     } catch (error) {
-      alert("Erro ao excluir: " + (error.response?.data?.error || "Erro desconhecido"));
+      const errorMsg = error.response?.data?.error || "Erro desconhecido";
+      if(errorMsg.includes("Foreign key constraint") || errorMsg.includes("Constraint violation")) {
+          alert("Não é possível excluir: Este produto possui histórico de produção.");
+      } else {
+          alert("Erro ao excluir: " + errorMsg);
+      }
     }
   }
 
@@ -558,13 +494,7 @@ function CadastroProdutos({ onClose }) {
           />
         </div>
 
-        <div className="field">
-          <label className="label">Tipo</label>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} disabled={loading}>
-            <option value="pa">Produto Acabado</option>
-            <option value="mp">Matéria-prima</option>
-          </select>
-        </div>
+        {/* Tipo removido visualmente pois é fixo */}
 
         <div className="field">
           <label className="label">Unidade</label>
@@ -576,37 +506,18 @@ function CadastroProdutos({ onClose }) {
           </select>
         </div>
 
-        {/* Campos condicionais se for Matéria Prima (Backend exige lote na criação) */}
-        {tipo === "mp" && (
-          <>
-            <div className="field">
-              <label className="label">Lote Inicial</label>
-              <input
-                value={loteMp}
-                onChange={(e) => setLoteMp(e.target.value)}
-                placeholder="Lote..."
-                disabled={loading}
-              />
-            </div>
-            <div className="field">
-              <label className="label">Qtd Inicial</label>
-              <input
-                type="number"
-                value={qtdMp}
-                onChange={(e) => setQtdMp(e.target.value)}
-                placeholder="0"
-                disabled={loading}
-              />
-            </div>
-          </>
-        )}
-
-        {/* Aviso se for PA */}
-        {tipo === "pa" && (
-          <div className="field full info-text" style={{fontSize: '0.85rem', color: '#888', fontStyle: 'italic'}}>
-            ℹ️ Produtos Acabados começam com estoque 0. Use a tela de <b>Produção</b> para gerar estoque consumindo matéria-prima.
-          </div>
-        )}
+        {/* Aviso Fixo em 1 linha (nowrap) */}
+        <div className="field full info-text" style={{
+            fontSize: '0.85rem', 
+            color: '#888', 
+            fontStyle: 'italic', 
+            marginTop: '10px',
+            whiteSpace: 'nowrap',       // Força 1 linha
+            overflow: 'hidden',         // Esconde excesso se a tela for pequena
+            textOverflow: 'ellipsis'    // Coloca ... se cortar
+        }}>
+            ℹ️ Produtos começam com estoque 0. Use a tela de Produção para gerar estoque.
+        </div>
 
         {err && <div className="alert error full">{err}</div>}
         {ok && <div className="alert ok full">✅ {ok}</div>}
@@ -616,39 +527,46 @@ function CadastroProdutos({ onClose }) {
             Fechar
           </button>
           <button type="submit" className="btn small" disabled={loading}>
-            {loading ? "Salvando..." : "Cadastrar"}
+            {loading ? "Salvando..." : "Cadastrar Produto"}
           </button>
         </div>
       </form>
 
       <div className="recent-card">
-        <div className="recent-head">Produtos e MPs Cadastrados</div>
-        {listaUnificada.length === 0 ? (
-          <div className="side-empty">Nenhum item cadastrado.</div>
+        <div className="recent-head">Produtos Cadastrados</div>
+        {listaProdutos.length === 0 ? (
+          <div className="side-empty">Nenhum produto cadastrado.</div>
         ) : (
           <div className="table-like">
-            <div className="t-prod-head">
+            {/* Grid ajustado: removido coluna Lote */}
+            <div className="t-prod-head" style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 1fr 0.5fr', gap: '10px' }}>
               <span>Nome</span>
-              <span>Tipo</span>
               <span>Un</span>
-              <span>Lote Atual</span>
               <span>Saldo Total</span>
               <span>Ações</span>
             </div>
-            {listaUnificada.map((p) => (
-              <div key={p.id} className="t-prod-row">
-                <span>{p.nome}</span>
-                <span>
-                  {p.tipo === "mp" ? <span className="badge mp">MP</span> : <span className="badge pa">PA</span>}
+            {listaProdutos.map((p) => (
+              <div key={p.id} className="t-prod-row" style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 1fr 0.5fr', gap: '10px', alignItems: 'center' }}>
+                
+                <span style={{ 
+                    whiteSpace: 'nowrap', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis',
+                    fontWeight: '500'
+                }} title={p.nome}>
+                    {p.nome}
                 </span>
+
                 <span>{p.un}</span>
-                <span>{p.lote}</span>
-                <span>{p.saldo}</span>
+                
+                <span style={{ fontWeight: 'bold' }}>{p.saldo}</span>
+                
                 <span>
                   <button
                     className="ghost-btn"
                     onClick={() => remover(p)}
                     title="Excluir"
+                    type="button"
                   >
                     🗑️
                   </button>
@@ -662,19 +580,25 @@ function CadastroProdutos({ onClose }) {
   );
 }
 
-/* ======= TELA: EXECUÇÃO DE PRODUÇÃO (INTEGRADA) ======= */
+/* ======= TELA: EXECUÇÃO DE PRODUÇÃO (MÚLTIPLAS MPs + VALIDAÇÃO INTEGRADO) ======= */
+
 function ExecProducao({ onClose }) {
-  // Listas para os Selects
+  // Dados do Backend
   const [listaPA, setListaPA] = React.useState([]);
   const [listaMP, setListaMP] = React.useState([]);
   const [historicoProducao, setHistoricoProducao] = React.useState([]);
 
-  // Form States
+  // Estados do Formulário (Produto Acabado)
   const [produtoPaId, setProdutoPaId] = React.useState("");
   const [qtdPa, setQtdPa] = React.useState("");
-  const [mpId, setMpId] = React.useState(""); // ID da MP selecionada
-  const [qtdMp, setQtdMp] = React.useState("");
-  
+
+  // Estados Temporários (Para adicionar MP na lista)
+  const [mpSelecionadaId, setMpSelecionadaId] = React.useState("");
+  const [qtdMpInput, setQtdMpInput] = React.useState("");
+
+  // Lista Final de MPs que serão enviadas
+  const [mpsParaConsumo, setMpsParaConsumo] = React.useState([]);
+
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState("");
   const [ok, setOk] = React.useState("");
@@ -687,9 +611,9 @@ function ExecProducao({ onClose }) {
   async function carregarDados() {
     try {
       const [resProd, resMp, resHist] = await Promise.all([
-        api.get("/produtos"),        // Para popular o select de Produto Acabado
-        api.get("/materias-primas"), // Para popular o select de Matéria Prima
-        api.get("/producoes")         // Para mostrar a tabela de histórico recente
+        api.get("/produtos"),        
+        api.get("/materias-primas"), 
+        api.get("/producao")         
       ]);
 
       setListaPA(resProd.data.produtos || []);
@@ -697,53 +621,100 @@ function ExecProducao({ onClose }) {
       setHistoricoProducao(resHist.data.producoes || []);
 
     } catch (error) {
-      console.error("Erro ao carregar dados de produção:", error);
+      console.error("Erro ao carregar dados:", error);
       setErr("Falha ao carregar listas do servidor.");
     }
   }
 
-  // 2. Enviar Produção
+  // --- Função auxiliar de validação de input ---
+  const handlePositiveInput = (setter) => (e) => {
+    const val = e.target.value;
+    // Permite vazio (para apagar) ou números positivos
+    if (val === "" || Number(val) >= 0) {
+      setter(val);
+    }
+  };
+
+  // 2. Função para Adicionar MP na lista temporária
+  function adicionarMpNaLista() {
+    setErr("");
+    
+    if (!mpSelecionadaId) return setErr("Selecione uma matéria-prima.");
+    const qtd = Number(qtdMpInput);
+    
+    // Validação extra antes de adicionar
+    if (!qtd || qtd <= 0) return setErr("Informe uma quantidade válida (maior que zero).");
+
+    // Verifica se já adicionou essa MP para não duplicar
+    const jaExiste = mpsParaConsumo.find(item => item.id === Number(mpSelecionadaId));
+    if (jaExiste) {
+      return setErr("Esta matéria-prima já está na lista. Remova-a se quiser corrigir a quantidade.");
+    }
+
+    // Busca os detalhes da MP
+    const mpDetalhes = listaMP.find(m => m.id === Number(mpSelecionadaId));
+
+    const novoItem = {
+      id: mpDetalhes.id,
+      nome: mpDetalhes.nome,
+      lote: mpDetalhes.lote,
+      unidade: mpDetalhes.unidadeMedida,
+      quantidadeUsada: qtd
+    };
+
+    setMpsParaConsumo([...mpsParaConsumo, novoItem]);
+    
+    // Limpa os campos de seleção de MP
+    setMpSelecionadaId("");
+    setQtdMpInput("");
+  }
+
+  // 3. Remover MP da lista temporária
+  function removerMpDaLista(idParaRemover) {
+    setMpsParaConsumo(mpsParaConsumo.filter(item => item.id !== idParaRemover));
+  }
+
+  // 4. Enviar Produção (Payload Final)
   async function handleProduzir(e) {
     e.preventDefault();
     setErr("");
     setOk("");
 
+    // Validações Gerais
     if (!produtoPaId) return setErr("Selecione o produto acabado.");
     if (!qtdPa || Number(qtdPa) <= 0) return setErr("Informe a quantidade a produzir.");
-    if (!mpId) return setErr("Selecione a matéria-prima.");
-    if (!qtdMp || Number(qtdMp) <= 0) return setErr("Informe a quantidade de MP a consumir.");
+    
+    // Validação da Lista de MPs
+    if (mpsParaConsumo.length === 0) {
+      return setErr("Adicione pelo menos uma matéria-prima para a receita.");
+    }
 
     setLoading(true);
 
     try {
-      // Formato exigido pelo Backend (ProducaoController -> ProducaoService)
+      const listaFormatadaBackend = mpsParaConsumo.map(item => ({
+        id: item.id,
+        quantidadeUsada: item.quantidadeUsada
+      }));
+
       const payload = {
         produtoId: Number(produtoPaId),
         quantidadeProduzida: Number(qtdPa),
-        // O backend espera um array de matérias-primas
-        materiasPrimas: [
-          {
-            id: Number(mpId),
-            quantidadeUsada: Number(qtdMp)
-          }
-        ]
-        // usuarioId é pego automaticamente pelo token no backend
+        materiasPrimas: listaFormatadaBackend
       };
 
-      const response = await api.post("/producoes", payload);
+      const response = await api.post("/producao", payload);
 
-      setOk(`Produção registrada com sucesso! Lote Gerado: ${response.data.lote}`);
+      setOk(`Produção registrada! Lote: ${response.data.lote}`);
       
-      // Limpa formulário
+      // Reset total do formulário
       setQtdPa("");
-      setQtdMp("");
+      setMpsParaConsumo([]); // Limpa a lista de MPs
       
-      // Recarrega histórico e saldos (opcional, mas bom para atualizar a UI se tivesse saldo visível)
       carregarDados();
 
     } catch (apiError) {
       console.error(apiError);
-      // Tenta pegar a mensagem específica do backend (ex: "Estoque insuficiente")
       const msg = apiError.response?.data?.error || "Erro ao registrar produção.";
       setErr(msg);
     } finally {
@@ -755,9 +726,9 @@ function ExecProducao({ onClose }) {
     <div className="modal-form">
       <form onSubmit={handleProduzir} className="form-grid form-producao">
         
-        {/* === ÁREA DO PRODUTO ACABADO === */}
+        {/* === SEÇÃO 1: O QUE VAI SER PRODUZIDO (PA) === */}
         <div className="field full">
-          <label className="label">Produto Acabado (O que vai entrar no estoque)</label>
+          <label className="label">Produto Acabado (Entrada)</label>
           <select
             value={produtoPaId}
             onChange={(e) => setProdutoPaId(e.target.value)}
@@ -777,51 +748,98 @@ function ExecProducao({ onClose }) {
           <input
             type="number"
             step="any"
+            min="0" // Ajuda visual do navegador
             value={qtdPa}
-            onChange={(e) => setQtdPa(e.target.value)}
+            onChange={handlePositiveInput(setQtdPa)} // Bloqueia digitação negativa
             placeholder="Ex.: 10"
             disabled={loading}
           />
         </div>
 
         <div className="field">
-          <label className="label">Lote (Gerado Automático)</label>
-          <input value="Automático pelo Sistema" disabled style={{ color: "#888", fontStyle: "italic" }} />
+          <label className="label">Lote (Auto)</label>
+          <input value="Gerado pelo Sistema" disabled style={{ color: "#888", fontStyle: "italic" }} />
         </div>
 
         <div className="field full">
           <hr className="field-separator" />
-          <p style={{fontSize: '0.85rem', color: '#aaa', marginBottom: '10px'}}>Consumo de Matéria-Prima</p>
+          <p style={{fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 'bold', marginBottom: '10px'}}>
+            Ingredientes / Matérias-Primas
+          </p>
         </div>
 
-        {/* === ÁREA DA MATÉRIA PRIMA === */}
-        <div className="field">
-          <label className="label">Matéria-prima (O que vai sair)</label>
-          <select
-            value={mpId}
-            onChange={(e) => setMpId(e.target.value)}
-            disabled={loading}
-          >
-            <option value="">Selecione...</option>
-            {listaMP.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.nome} (Lote: {m.lote} | Saldo: {m.quantidade} {m.unidadeMedida})
-              </option>
-            ))}
-          </select>
+        {/* === SEÇÃO 2: ADICIONAR MPs (Staging Area) === */}
+        <div className="field full" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: '10px', alignItems: 'end', background: 'rgba(0,0,0,0.03)', padding: '10px', borderRadius: '6px' }}>
+            <div>
+                <label className="label">Selecione a MP</label>
+                <select
+                    value={mpSelecionadaId}
+                    onChange={(e) => setMpSelecionadaId(e.target.value)}
+                    disabled={loading}
+                    style={{width: '100%'}}
+                >
+                    <option value="">Selecione...</option>
+                    {listaMP.map((m) => (
+                    <option key={m.id} value={m.id}>
+                        {m.nome} (Lote: {m.lote} | Disp: {m.quantidade} {m.unidadeMedida})
+                    </option>
+                    ))}
+                </select>
+            </div>
+            
+            <div>
+                <label className="label">Qtd Usada</label>
+                <input
+                    type="number"
+                    step="any"
+                    min="0" // Ajuda visual
+                    value={qtdMpInput}
+                    onChange={handlePositiveInput(setQtdMpInput)} // Bloqueia digitação negativa
+                    placeholder="0"
+                    disabled={loading}
+                    style={{width: '100%'}}
+                />
+            </div>
+
+            <button 
+                type="button" 
+                className="btn small" 
+                onClick={adicionarMpNaLista}
+                disabled={loading}
+                style={{marginBottom: '2px'}}
+            >
+                + Adicionar
+            </button>
         </div>
 
-        <div className="field">
-          <label className="label">Qtd a Consumir</label>
-          <input
-            type="number"
-            step="any"
-            value={qtdMp}
-            onChange={(e) => setQtdMp(e.target.value)}
-            placeholder="Ex.: 5"
-            disabled={loading}
-          />
-        </div>
+        {/* === SEÇÃO 3: LISTA DE MPs ADICIONADAS === */}
+        {mpsParaConsumo.length > 0 && (
+            <div className="field full">
+                <div className="table-like" style={{maxHeight: '150px', overflowY: 'auto'}}>
+                    <div className="t-head" style={{gridTemplateColumns: '2fr 1fr 1fr 0.5fr'}}>
+                        <span>Matéria-Prima</span>
+                        <span>Lote</span>
+                        <span>Qtd</span>
+                        <span></span>
+                    </div>
+                    {mpsParaConsumo.map((item) => (
+                        <div key={item.id} className="t-row" style={{gridTemplateColumns: '2fr 1fr 1fr 0.5fr'}}>
+                            <span>{item.nome}</span>
+                            <span>{item.lote}</span>
+                            <span style={{color: '#e53935'}}>-{item.quantidadeUsada} {item.unidade}</span>
+                            <button 
+                                type="button" 
+                                className="ghost-btn" 
+                                onClick={() => removerMpDaLista(item.id)}
+                                title="Remover"
+                            >
+                                ❌
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
 
         {err && <div className="alert error full">{err}</div>}
         {ok && <div className="alert ok full">✅ {ok}</div>}
@@ -830,32 +848,33 @@ function ExecProducao({ onClose }) {
           <button type="button" className="ghost-btn" onClick={onClose} disabled={loading}>
             Fechar
           </button>
-          <button type="submit" className="btn small" disabled={loading}>
-            {loading ? "Registrando..." : "Confirmar Produção"}
+          <button type="submit" className="btn small" disabled={loading || mpsParaConsumo.length === 0}>
+            {loading ? "Processando..." : "Confirmar Produção"}
           </button>
         </div>
       </form>
 
+      {/* Histórico Abaixo (Visualização Apenas) */}
       <div className="recent-card">
-        <div className="recent-head">Histórico de Produção</div>
+        <div className="recent-head">Histórico Recente</div>
         {historicoProducao.length === 0 ? (
           <div className="side-empty">Nenhuma produção registrada.</div>
         ) : (
           <div className="table-like">
             <div className="t-head">
-              <span>Data</span>
               <span>Produto</span>
-              <span>Lote Gerado</span>
-              <span>Qtd Produzida</span>
-              <span>Responsável</span>
+              <span>Lote</span>
+              <span>Qtd</span>
+              <span>MPs</span>
             </div>
-            {historicoProducao.map((p) => (
+            {historicoProducao.slice(0, 5).map((p) => (
               <div key={p.id} className="t-row">
-                <span>{new Date(p.dataProducao).toLocaleString()}</span>
-                <span>{p.produto?.nome || "Produto Deletado"}</span>
+                <span>{p.produto?.nome}</span>
                 <span>{p.lote}</span>
-                <span style={{ color: "#4caf50", fontWeight: "bold" }}>+{p.quantidadeProduzida}</span>
-                <span>{p.usuario?.nome || "-"}</span>
+                <span style={{ color: "#4caf50" }}>+{p.quantidadeProduzida}</span>
+                <span style={{fontSize: '0.8rem'}}>
+                    {p.materiasPrimasUsadas?.length || 0} itens
+                </span>
               </div>
             ))}
           </div>
@@ -1070,77 +1089,91 @@ function Estoque({ onClose }) {
 }
 
 /* ============================
-   COMPONENTE: RASTREABILIDADE
+   COMPONENTE: RASTREABILIDADE (INTEGRADO)
    ============================ */
 
-function Rastreabilidade() {
-  const STORAGE_PROD = "translot_produtos";
+function Rastreabilidade({ onClose }) {
+  const [resultados, setResultados] = React.useState(null); // null = sem busca
+  const [loading, setLoading] = React.useState(false);
+  const [erro, setErro] = React.useState("");
 
-  // carrega os produtos cadastrados
-  const [produtos] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_PROD)) ?? [];
-    } catch {
-      return [];
-    }
-  });
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchField, setSearchField] = React.useState("lotePa"); // lotePa | nome | loteMp
 
-  const [searchTerm, setSearchTerm]   = React.useState("");
-  const [searchField, setSearchField] = React.useState("nome"); // nome | lotePa | loteMp
-  const [resultados, setResultados]   = React.useState(null);   // null = ainda não buscou
-  const [erro, setErro]               = React.useState("");
-
-  function handleBuscar(e) {
+  async function handleBuscar(e) {
     e.preventDefault();
     setErro("");
+    setResultados(null);
 
-    const term = searchTerm.trim().toLowerCase();
-    if (!term) {
-      setErro("Digite um termo para buscar.");
-      setResultados(null);
-      return;
+    const term = searchTerm.trim();
+    if (!term) return setErro("Digite um termo para buscar.");
+
+    setLoading(true);
+
+    try {
+      let dadosEncontrados = [];
+
+      if (searchField === "lotePa") {
+        // === Busca Direta por Lote PA ===
+        // Endpoint: GET /producao/lote/:lote
+        try {
+            const res = await api.get(`/producao/lote/${encodeURIComponent(term)}`);
+            dadosEncontrados = res.data.producoes || [];
+        } catch (e) {
+            // Se der 404 ou 400, apenas retorna vazio
+            dadosEncontrados = [];
+        }
+      } else {
+        // === Busca Genérica (Nome ou Lote MP) ===
+        // Endpoint: GET /producao (Traz histórico recente)
+        const res = await api.get("/producao");
+        const todoHistorico = res.data.producoes || [];
+
+        if (searchField === "nome") {
+          dadosEncontrados = todoHistorico.filter((p) =>
+            (p.produto?.nome || "").toLowerCase().includes(term.toLowerCase())
+          );
+        } else if (searchField === "loteMp") {
+          // Filtra se ALGUMA das MPs usadas tem esse lote
+          dadosEncontrados = todoHistorico.filter((p) =>
+            p.materiasPrimasUsadas.some((item) =>
+              (item.materiaPrima?.lote || "").toLowerCase().includes(term.toLowerCase())
+            )
+          );
+        }
+      }
+
+      setResultados(dadosEncontrados);
+    } catch (err) {
+      console.error(err);
+      setErro("Erro ao comunicar com o servidor.");
+    } finally {
+      setLoading(false);
     }
-
-    let lista = [...produtos];
-
-    if (searchField === "nome") {
-      lista = lista.filter((p) =>
-        (p.nome || "").toLowerCase().includes(term)
-      );
-    } else if (searchField === "lotePa") {
-      lista = lista.filter((p) =>
-        (p.lotePa || "").toLowerCase().includes(term)
-      );
-    } else if (searchField === "loteMp") {
-      lista = lista.filter((p) =>
-        (p.mpLote || "").toLowerCase().includes(term)
-      );
-    }
-
-    setResultados(lista);
   }
 
   return (
     <div className="modal-form">
-      <h3 className="config-title">Rastreabilidade de produtos</h3>
+      <h3 className="config-title">Rastreabilidade de Produção</h3>
       <p className="config-subtitle">
-        Busque por nome ou lote e veja de qual matéria-prima o produto veio.
+        Localize a origem de um lote ou onde uma matéria-prima foi utilizada.
       </p>
 
-      {/* Filtros, no mesmo estilo da tela de Estoque */}
+      {/* --- FORMULÁRIO DE BUSCA --- */}
       <form className="form-grid form-estoque-filtros" onSubmit={handleBuscar}>
         <div className="field full">
-          <label className="label">Pesquisar</label>
+          <label className="label">Termo de Busca</label>
           <input
             placeholder={
-              searchField === "nome"
-                ? "Digite o nome do produto..."
-                : searchField === "lotePa"
-                ? "Digite o lote do produto acabado (PA)..."
-                : "Digite o lote da matéria-prima..."
+              searchField === "lotePa"
+                ? "Ex: L-PA-2025-0001"
+                : searchField === "loteMp"
+                ? "Ex: L23-091"
+                : "Ex: Mesa"
             }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            disabled={loading}
           />
         </div>
 
@@ -1149,122 +1182,230 @@ function Rastreabilidade() {
           <select
             value={searchField}
             onChange={(e) => setSearchField(e.target.value)}
+            disabled={loading}
           >
-            <option value="nome">Nome do produto</option>
-            <option value="lotePa">Lote do produto (PA)</option>
-            <option value="loteMp">Lote da matéria-prima</option>
+            <option value="lotePa">Lote do Produto (PA)</option>
+            <option value="loteMp">Lote da Matéria-prima (MP)</option>
+            <option value="nome">Nome do Produto</option>
           </select>
         </div>
 
         <div className="actions" style={{ alignSelf: "flex-end" }}>
-          <button type="submit" className="btn small">
-            Buscar
+          <button type="submit" className="btn small" disabled={loading}>
+            {loading ? "Buscando..." : "Rastrear"}
           </button>
         </div>
       </form>
 
-      {erro && <div className="alert error" style={{ marginTop: "8px" }}>{erro}</div>}
+      {erro && <div className="alert error full" style={{marginTop: 10}}>{erro}</div>}
 
+      {/* --- RESULTADOS --- */}
       <div className="recent-card" style={{ marginTop: "1rem" }}>
-        <div className="recent-head">Resultado da rastreabilidade</div>
+        <div className="recent-head">
+            Resultado da Rastreabilidade
+            {resultados && <span style={{marginLeft: 10, fontSize: '0.8rem'}}>({resultados.length} encontrados)</span>}
+        </div>
 
         {resultados === null ? (
-          <div className="side-empty">
-            Digite um termo e clique em Buscar.
-          </div>
+          <div className="side-empty">Utilize os filtros acima para iniciar.</div>
         ) : resultados.length === 0 ? (
-          <div className="side-empty">
-            Nenhum produto encontrado com os filtros atuais.
-          </div>
+          <div className="side-empty">Nenhum registro encontrado para "{searchTerm}".</div>
         ) : (
           <div className="table-like">
-            <div className="t-prod-head">
-              <span>Nome</span>
-              <span>Tipo</span>
-              <span>Un</span>
-              <span>Lote PA</span>
-              <span>Lote MP</span>
-              <span>Qtd planejada</span>
-              <span>MP vinculada</span>
-            </div>
+            {resultados.map((prod) => (
+              <div key={prod.id} className="trace-card" style={{
+                  background: 'var(--bg-card)', 
+                  padding: '10px', 
+                  marginBottom: '10px', 
+                  borderRadius: '4px',
+                  border: '1px solid var(--border)'
+              }}>
+                {/* Cabeçalho do Card de Rastreio */}
+                <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '5px', marginBottom: '5px'}}>
+                    <span style={{fontWeight: 'bold', color: 'var(--accent)'}}>{prod.lote}</span>
+                    <span style={{fontSize: '0.85rem'}}>{new Date(prod.dataProducao).toLocaleString()}</span>
+                </div>
+                
+                {/* Corpo do Card */}
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.9rem'}}>
+                    <div>
+                        <strong>Produto:</strong> {prod.produto?.nome}<br/>
+                        <strong>Quantidade:</strong> {prod.quantidadeProduzida}
+                    </div>
+                    <div>
+                        <strong>Responsável:</strong> {prod.usuario?.nome || "Admin"}<br/>
+                        <strong>ID Produção:</strong> #{prod.id}
+                    </div>
+                </div>
 
-            {resultados.map((p) => (
-              <div key={p.id} className="t-prod-row">
-                <span>{p.nome}</span>
-                <span>{p.tipo === "mp" ? "Matéria-prima" : "Produto acabado"}</span>
-                <span>{p.un}</span>
-                <span>{p.lotePa || "-"}</span>
-                <span>{p.mpLote || "-"}</span>
-                <span>{p.qtdPa ?? "-"}</span>
-                <span>
-                  {p.tipo === "pa" && p.mpNome
-                    ? `${p.mpNome} (${p.mpUn})`
-                    : "-"}
-                </span>
+                {/* Sub-lista de MPs usadas */}
+                <div style={{marginTop: '8px', background: 'rgba(0,0,0,0.05)', padding: '5px', borderRadius: '4px'}}>
+                    <strong style={{fontSize: '0.8rem'}}>Matérias-Primas Utilizadas:</strong>
+                    {prod.materiasPrimasUsadas.map(mpUso => (
+                        <div key={mpUso.id} style={{fontSize: '0.85rem', display: 'flex', justifyContent: 'space-between', marginTop: '2px'}}>
+                            <span>• {mpUso.materiaPrima?.nome} (Lote: {mpUso.materiaPrima?.lote})</span>
+                            <span>Qtd: {mpUso.quantidadeUsada} {mpUso.materiaPrima?.unidadeMedida}</span>
+                        </div>
+                    ))}
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      
+      <div className="actions full" style={{ marginTop: "1rem" }}>
+        <button className="ghost-btn" onClick={onClose}>Fechar</button>
+      </div>
     </div>
   );
 }
 
-/* ======= TELA: USUÁRIOS DO SISTEMA ======= */
+/* ======= TELA: USUÁRIOS DO SISTEMA (ATUALIZADA) ======= */
+
 function UsuariosSistema({ onClose }) {
-  const STORAGE_KEY = "translot_usuarios";
-
-  const [usuarios, setUsuarios] = React.useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
-    } catch {
-      return [];
-    }
-  });
-
+  const [listaUsuarios, setListaUsuarios] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  
+  // Form States
   const [nome, setNome] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [senha, setSenha] = React.useState("");
-  const [admin, setAdmin] = React.useState(false);
+  // Inicia como USER para o select não ficar visualmente vazio
+  const [tipo, setTipo] = React.useState("USER"); 
 
-  function salvarUsuario() {
+  const [err, setErr] = React.useState("");
+  const [ok, setOk] = React.useState("");
+
+  // Pega o ID do usuário logado para impedir auto-exclusão
+  const currentUserId = React.useMemo(() => {
+    try {
+        const stored = JSON.parse(localStorage.getItem("translot_user"));
+        return stored?.usuario?.id; // Ajuste conforme a estrutura que você salvou no login
+    } catch {
+        return null;
+    }
+  }, []);
+
+  // 1. Carregar lista de usuários
+  React.useEffect(() => {
+    fetchUsuarios();
+  }, []);
+
+  async function fetchUsuarios() {
+    try {
+      const res = await api.get("/usuarios");
+      if (res.data.ok) {
+        // Ordena por ID para o Admin (1) ficar sempre no topo
+        const sorted = res.data.usuarios.sort((a, b) => a.id - b.id);
+        setListaUsuarios(sorted);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+      if (error.response?.status === 403) {
+        setErr("Você não tem permissão para visualizar usuários (Apenas Admin).");
+      }
+    }
+  }
+
+  // 2. Salvar Usuário
+  async function salvarUsuario() {
+    // Limpa mensagens anteriores
+    setErr("");
+    setOk("");
+
     if (!nome.trim() || !email.trim() || !senha.trim()) {
-      alert("Preencha todos os campos.");
-      return;
+      return setErr("Preencha todos os campos obrigatórios.");
     }
 
-    const novo = {
-      id: Date.now(),
-      nome: nome.trim(),
-      email: email.trim(),
-      senha: senha.trim(),
-      admin: admin ? true : false,
-    };
+    setLoading(true);
 
-    const lista = [...usuarios, novo];
-    setUsuarios(lista);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+    try {
+      const payload = {
+        nome: nome.trim(),
+        email: email.trim(),
+        senha: senha.trim(),
+        tipoAcesso: tipo // Já inicia com valor válido
+      };
 
-    setNome("");
-    setEmail("");
-    setSenha("");
-    setAdmin(false);
+      await api.post("/usuarios", payload);
+
+      setOk(`Usuário "${nome}" criado com sucesso.`);
+      
+      // Limpa form
+      setNome("");
+      setEmail("");
+      setSenha("");
+      setTipo("USER");
+
+      // Atualiza lista
+      fetchUsuarios();
+
+    } catch (apiError) {
+      const msg = apiError.response?.data?.error || "Erro ao criar usuário.";
+      setErr(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 3. Deletar Usuário (Com Regras de Bloqueio)
+  async function deletar(usuarioAlvo) {
+    // Limpa mensagens anteriores imediatamente
+    setErr("");
+    setOk("");
+
+    const id = usuarioAlvo.id;
+    const nomeAlvo = usuarioAlvo.nome;
+
+    // REGRA 1: Não excluir o Admin Principal (ID 1)
+    if (id === 1) {
+        setErr("Bloqueado: Não é possível excluir o Administrador Principal (ID #1).");
+        return;
+    }
+
+    // REGRA 2: Não excluir a si mesmo
+    if (id === currentUserId) {
+        setErr("Bloqueado: Você não pode excluir seu próprio usuário enquanto está logado.");
+        return;
+    }
+
+    if(!confirm(`Tem certeza que deseja remover o usuário "${nomeAlvo}"?`)) return;
+
+    try {
+        await api.delete(`/usuarios/${id}`);
+        setOk(`Usuário "${nomeAlvo}" removido com sucesso.`);
+        fetchUsuarios();
+    } catch (e) {
+        const msg = e.response?.data?.error || "Erro desconhecido ao deletar.";
+        setErr(`Erro ao deletar: ${msg}`);
+    }
   }
 
   return (
     <div className="modal-form">
-      <h3 className="config-title">Gerenciar usuários</h3>
-      <p className="config-subtitle">Cadastre usuários e defina permissões.</p>
+      <h3 className="config-title">Gerenciar Usuários</h3>
+      <p className="config-subtitle">Cadastre operadores e administradores do sistema.</p>
 
       <div className="form-grid">
         <div className="field">
           <label className="label">Nome</label>
-          <input value={nome} onChange={(e) => setNome(e.target.value)} />
+          <input 
+            value={nome} 
+            onChange={(e) => setNome(e.target.value)} 
+            placeholder="João Silva"
+            disabled={loading}
+          />
         </div>
 
         <div className="field">
-          <label className="label">E-mail</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} />
+          <label className="label">E-mail (Login)</label>
+          <input 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            placeholder="joao@empresa.com"
+            disabled={loading}
+          />
         </div>
 
         <div className="field">
@@ -1273,49 +1414,90 @@ function UsuariosSistema({ onClose }) {
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
+            placeholder="******"
+            disabled={loading}
           />
         </div>
 
         <div className="field">
-          <label className="label">Administrador?</label>
-          <select
-            value={admin ? "true" : "false"}
-            onChange={(e) => setAdmin(e.target.value === "true")}
+          <label className="label">Tipo de Acesso</label>
+          <select 
+            value={tipo} 
+            onChange={(e) => setTipo(e.target.value)}
+            disabled={loading}
           >
-            <option value="false">Não</option>
-            <option value="true">Sim</option>
+            <option value="USER">Usuário Comum</option>
+            <option value="ADMIN">Administrador</option>
           </select>
         </div>
+
+        {/* Exibe mensagens de feedback */}
+        {err && <div className="alert error full">{err}</div>}
+        {ok && <div className="alert ok full">✅ {ok}</div>}
 
         <div className="actions full">
           <button
             className="primary-btn"
+            style={{ width: '100%', padding: '10px', marginTop: '10px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
             type="button"
             onClick={salvarUsuario}
+            disabled={loading}
           >
-            Salvar usuário
+            {loading ? "Salvando..." : "Cadastrar Usuário"}
           </button>
         </div>
       </div>
 
       <div className="recent-card" style={{ marginTop: "1rem" }}>
-        <div className="recent-head">Usuários cadastrados</div>
+        <div className="recent-head">Usuários Cadastrados</div>
 
-        {usuarios.length === 0 ? (
-          <div className="side-empty">Nenhum usuário cadastrado.</div>
+        {listaUsuarios.length === 0 ? (
+          <div className="side-empty">Nenhum usuário encontrado.</div>
         ) : (
           <div className="table-like">
             <div className="t-head">
+              <span>ID</span>
               <span>Nome</span>
               <span>Email</span>
-              <span>Admin</span>
+              <span>Tipo</span>
+              <span>Ação</span>
             </div>
 
-            {usuarios.map((u) => (
-              <div key={u.id} className="t-row">
+            {listaUsuarios.map((u) => (
+              <div key={u.id} className="t-row" style={{ alignItems: 'center' }}>
+                <span>#{u.id}</span>
                 <span>{u.nome}</span>
-                <span>{u.email}</span>
-                <span>{u.admin ? "Sim" : "Não"}</span>
+                
+                {/* Estilo para evitar que email longo quebre o layout */}
+                <span style={{ 
+                    whiteSpace: 'nowrap', 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis', 
+                    maxWidth: '100%' 
+                }} title={u.email}>
+                    {u.email}
+                </span>
+
+                <span>
+                      {u.tipoAcesso && u.tipoAcesso.toUpperCase() === "ADMIN" 
+                        ? <span style={{color: 'red', fontWeight: 'bold'}}>ADMIN</span> 
+                        : "USER"}
+                </span>
+                
+                <span>
+                    {/* Botão desabilitado visualmente se for ID 1 ou próprio usuário, mas a lógica no onClick também protege */}
+                    <button 
+                        className="ghost-btn" 
+                        onClick={() => deletar(u)} 
+                        title="Excluir"
+                        style={{ 
+                            opacity: (u.id === 1 || u.id === currentUserId) ? 0.3 : 1,
+                            cursor: (u.id === 1 || u.id === currentUserId) ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        🗑️
+                    </button>
+                </span>
               </div>
             ))}
           </div>
@@ -1330,4 +1512,3 @@ function UsuariosSistema({ onClose }) {
     </div>
   );
 }
-
