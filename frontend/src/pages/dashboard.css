@@ -843,3 +843,226 @@ body { margin:0; background:var(--bg); color:var(--text);
   overflow-y: auto;  /* scroll só vertical */
   padding: 20px;
 }
+
+/* ============================================================
+   CORREÇÃO DO MODAL E INPUTS NO TEMA CLARO
+   ============================================================ */
+
+/* 1. Força o fundo e texto claros na estrutura do Modal */
+.theme-light .modal-window {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+}
+
+.theme-light .modal-head,
+.theme-light .modal-foot {
+  background: #f9fafb !important; /* Cinza bem clarinho nas pontas */
+  border-color: #e5e7eb !important;
+  color: #111827 !important;
+}
+
+.theme-light .modal-content {
+  background: #ffffff !important; /* Branco no meio */
+  color: #1f2937 !important;
+}
+
+.theme-light .modal-head h2 {
+  color: #111827 !important;
+}
+
+/* 2. Corrige os Inputs e Selects para fundo branco e texto preto */
+.theme-light .modal-form input,
+.theme-light .modal-form select,
+.theme-light .modal-form textarea {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #111827 !important;
+}
+
+.theme-light .modal-form input:focus,
+.theme-light .modal-form select:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* 3. Corrige Labels e Textos auxiliares */
+.theme-light .label,
+.theme-light .info-text {
+  color: #4b5563 !important;
+}
+
+/* 4. Corrige o botão de fechar (X) */
+.theme-light .modal-close {
+  color: #4b5563 !important;
+  border-color: #d1d5db !important;
+}
+.theme-light .modal-close:hover {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* 5. Corrige tabelas dentro do modal no tema claro */
+.theme-light .t-row {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #374151 !important;
+}
+.theme-light .t-head {
+  color: #6b7280 !important;
+}
+
+/* 1. Títulos e Subtítulos da Configuração */
+.theme-light .config-title {
+  color: #111827 !important; /* Preto */
+}
+
+.theme-light .config-subtitle {
+  color: #4b5563 !important; /* Cinza escuro */
+}
+
+/* 2. Cartões de Seleção de Tema (Os botões grandes) */
+.theme-light .theme-card {
+  border: 1px solid #d1d5db !important; /* Borda cinza visível */
+  color: #1f2937 !important; /* Texto principal escuro */
+  background: #ffffff !important;
+}
+
+/* Efeito Hover no tema claro */
+.theme-light .theme-card:hover {
+  background-color: #f9fafb !important; /* Cinza bem clarinho no hover */
+  border-color: #6366f1 !important; /* Borda roxa no hover */
+}
+
+/* Estado Ativo (Selecionado) no tema claro */
+.theme-light .theme-card.active {
+  background-color: #eff6ff !important; /* Azulzinho muito claro */
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* 3. Textos dentro do cartão */
+.theme-light .theme-card-title {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+.theme-light .theme-card-desc {
+  color: #6b7280 !important; /* Cinza médio para descrição */
+}
+
+/* 4. Texto de dica no rodapé */
+.theme-light .config-hint {
+  color: #000205 !important;
+}
+
+/* ================= DASHBOARD HOME (VISÃO GERAL) ================= */
+
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Cabeçalho de Boas-vindas */
+.home-header {
+  margin-bottom: 32px;
+}
+
+.home-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  background: linear-gradient(90deg, #fff, #9ca3af); /* Gradiente no texto */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Ajuste para tema claro */
+.theme-light .home-title {
+  background: linear-gradient(90deg, #111827, #4b5563);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.home-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Grid de Cards (Métricas) */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.kpi-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 24px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  border-color: #6366f1; /* Roxo ao passar o mouse */
+}
+
+.theme-light .kpi-card:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.kpi-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.kpi-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* Área de Atalhos / Imagem de Fundo */
+.home-shortcuts {
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(168,85,247,0.05));
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.shortcut-text {
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

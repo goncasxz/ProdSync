@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
 
   // 1. Ao iniciar, verifica se já tem usuário salvo
   useEffect(() => {
-    const storedUser = localStorage.getItem("translot_user");
+    const storedUser = localStorage.getItem("prodsync_user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
         const userData = { token, ...usuario };
 
         // Salva no localStorage (para o api.js ler depois)
-        localStorage.setItem("translot_user", JSON.stringify(userData));
+        localStorage.setItem("prodsync_user", JSON.stringify(userData));
         
         // Atualiza o estado global
         setUser(userData);
@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
 
   // 3. Função de Logout
   function logout() {
-    localStorage.removeItem("translot_user");
+    localStorage.removeItem("prodsync_user");
     setUser(null);
     // Opcional: Redirecionar via window.location ou navigate se necessário
   }

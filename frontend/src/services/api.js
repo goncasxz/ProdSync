@@ -9,7 +9,7 @@ export const api = axios.create({
 // Interceptor para adicionar token em todas as requests
 api.interceptors.request.use(
   (config) => {
-    const user = JSON.parse(localStorage.getItem("translot_user"));
+    const user = JSON.parse(localStorage.getItem("prodsync_user"));
     if (user?.token) {
       const token = user.token;
       const exp = JSON.parse(atob(token.split(".")[1])).exp;
@@ -28,5 +28,5 @@ api.interceptors.request.use(
 
 // Escuta evento global de logout
 window.addEventListener("logout", () => {
-  localStorage.removeItem("translot_user");
+  localStorage.removeItem("prodsync_user");
 });

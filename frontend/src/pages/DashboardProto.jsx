@@ -139,25 +139,7 @@ export default function DashboardProto() {
         <main className="content">
             <div className="panel-head">
             </div>
-  {/* Logo transparente */}
-      <img
-        src="/ChatGPT_Image_16_de_nov._de_2025__14_31_56-removebg-preview.png"
-        alt="ProdSync"
-        className="welcome-logo"
-      />
-
-      {/* Título */}
-      <h2 className="welcome-title">Bem-vindo ao ProdSync</h2>
-
-      {/* Frase clichê bonita */}
-      <p className="welcome-phrase">
-        Produtividade não é sobre fazer mais — é sobre fazer melhor.
-      </p>
-
-      {/* Subdescrição */}
-      <p className="welcome-sub">
-        Selecione uma função no menu lateral para começar.
-      </p>
+      <DashboardHome onNavigate={(key) => openModal(key, "")} />
         </main>
       </div>
 
@@ -185,6 +167,8 @@ export default function DashboardProto() {
     </div>
   );
 }
+
+
 
 /* ===== Modal genérico ===== */
 function Modal({ title, onClose, children }) {
@@ -215,9 +199,103 @@ function Modal({ title, onClose, children }) {
     </div>
   );
 }
+import { api } from "../services/api"; // Ajuste o caminho conforme sua estrutura
+
+/* ======= COMPONENTE DA TELA INICIAL (DASHBOARD) ======= */
+function DashboardHome({ onNavigate }) {
+  const [stats, setStats] = React.useState({
+    totalProdutos: 0,
+    totalMp: 0,
+    totalProducao: 0,
+    usuarios: 0
+  });
+
+  React.useEffect(() => {
+    async function fetchStats() {
+      try {
+        // Busca dados de todas as rotas para contar
+        const [resProd, resMp, resProdHist, resUsers] = await Promise.all([
+          api.get("/produtos"),
+          api.get("/materias-primas"),
+          api.get("/producao"),
+          api.get("/usuarios")
+        ]);
+
+        setStats({
+          totalProdutos: resProd.data.produtos?.length || 0,
+          totalMp: resMp.data.materiasPrimas?.length || 0,
+          totalProducao: resProdHist.data.producoes?.length || 0,
+          usuarios: resUsers.data.usuarios?.length || 0
+        });
+      } catch (error) {
+        console.error("Erro ao carregar estatísticas", error);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  // Pega o nome do usuário do localStorage para dar "Oi"
+  const userName = React.useMemo(() => {
+    try {
+        const user = JSON.parse(localStorage.getItem("prodsync_user"));
+        return user?.nome?.split(" ")[0] || "Visitante";
+    } catch { return "Visitante"; }
+  }, []);
+
+  const dataHoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  return (
+    <div className="home-container">
+      <header className="home-header">
+        <h1 className="home-title">Olá, {userName}! 👋</h1>
+        <p className="home-subtitle">
+          Hoje é {dataHoje}. Aqui está o resumo da sua operação.
+        </p>
+      </header>
+
+      {/* Grid de Cards KPIs */}
+      <div className="kpi-grid">
+        <div className="kpi-card" onClick={() => onNavigate("cadastro-produtos")} style={{cursor: 'pointer'}}>
+          <div className="kpi-icon">📦</div>
+          <span className="kpi-value">{stats.totalProdutos}</span>
+          <span className="kpi-label">Produtos Acabados</span>
+        </div>
+
+        <div className="kpi-card" onClick={() => onNavigate("estoque-produtos")} style={{cursor: 'pointer'}}>
+          <div className="kpi-icon">🧱</div>
+          <span className="kpi-value">{stats.totalMp}</span>
+          <span className="kpi-label">Matérias-Primas</span>
+        </div>
+
+        <div className="kpi-card" onClick={() => onNavigate("exec-producao")} style={{cursor: 'pointer'}}>
+          <div className="kpi-icon">🏭</div>
+          <span className="kpi-value">{stats.totalProducao}</span>
+          <span className="kpi-label">Produções Realizadas</span>
+        </div>
+
+        <div className="kpi-card" onClick={() => onNavigate("usuarios-sistema")} style={{cursor: 'pointer'}}>
+          <div className="kpi-icon">👥</div>
+          <span className="kpi-value">{stats.usuarios}</span>
+          <span className="kpi-label">Usuários Ativos</span>
+        </div>
+      </div>
+
+      {/* Área de Ação Rápida */}
+      <div className="home-shortcuts">
+        <h3>🚀 Acesso Rápido</h3>
+        <p className="shortcut-text">
+          O <strong>ProdSync</strong> está pronto. Utilize o menu lateral para acessar as funções detalhadas ou clique nos cards acima para navegar diretamente.
+        </p>
+        <div style={{display: 'flex', gap: 10}}>
+            <button className="btn small" onClick={() => onNavigate("exec-producao")}>Nova Produção</button>
+            <button className="ghost-btn" onClick={() => onNavigate("entrada-produto")}>Entrada de MP</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ======= TELA: ENTRADA DE PRODUTO (INTEGRADA) ======= */
-import { api } from "../services/api"; // Ajuste o caminho conforme sua estrutura
 
 function EntradaProdutoForm({ onClose }) {
   const [item, setItem] = React.useState("");
@@ -1280,7 +1358,7 @@ function UsuariosSistema({ onClose }) {
   // Pega o ID do usuário logado para impedir auto-exclusão
   const currentUserId = React.useMemo(() => {
     try {
-        const stored = JSON.parse(localStorage.getItem("translot_user"));
+        const stored = JSON.parse(localStorage.getItem("prodsync_user"));
         return stored?.usuario?.id; // Ajuste conforme a estrutura que você salvou no login
     } catch {
         return null;
@@ -1512,3 +1590,4 @@ function UsuariosSistema({ onClose }) {
     </div>
   );
 }
+
