@@ -1181,3 +1181,13 @@ body { margin:0; background:var(--bg); color:var(--text);
   border: 1px solid #d1d5db !important;
   color: #1f2937 !important;
 }
+
+/* ============================================================
+   CORREÇÃO DO LOGO NO TEMA CLARO
+   ============================================================ */
+
+/* Quando estiver no tema claro, inverte as cores do logo */
+.theme-light .brand-logo {
+  filter: invert(1) hue-rotate(180deg);
+  
+}
