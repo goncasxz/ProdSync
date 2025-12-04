@@ -434,7 +434,7 @@ function EntradaProdutoForm({ onClose }) {
             Cancelar (Esc)
           </button>
           <button type="submit" className="btn small" disabled={loading}>
-            {loading ? "Salvando..." : "Salvar (F9)"}
+            {loading ? "Salvando..." : "Salvar"}
           </button>
         </div>
       </form>
@@ -689,9 +689,9 @@ function ExecProducao({ onClose }) {
   async function carregarDados() {
     try {
       const [resProd, resMp, resHist] = await Promise.all([
-        api.get("/produtos"),        
-        api.get("/materias-primas"), 
-        api.get("/producao")         
+        api.get("/produtos"),
+        api.get("/materias-primas"),
+        api.get("/producao")
       ]);
 
       setListaPA(resProd.data.produtos || []);
@@ -845,14 +845,16 @@ function ExecProducao({ onClose }) {
                     style={{width: '100%'}}
                 >
                     <option value="">Selecione...</option>
-                    {listaMP.map((m) => (
+                    {listaMP
+                    .filter(m => m.quantidade > 0)
+                    .map((m) => (
                     <option key={m.id} value={m.id}>
                         {m.nome} (Lote: {m.lote} | Disp: {m.quantidade} {m.unidadeMedida})
                     </option>
                     ))}
                 </select>
             </div>
-            
+
             <div>
                 <label className="label">Qtd Usada</label>
                 <input
@@ -1513,7 +1515,7 @@ function UsuariosSistema({ onClose }) {
         <div className="actions full">
           <button
             className="primary-btn"
-            style={{ width: '100%', padding: '10px', marginTop: '10px', background: 'green', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+            style={{ width: '100%', padding: '10px', marginTop: '10px', background: '#1d1a44', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
             type="button"
             onClick={salvarUsuario}
             disabled={loading}

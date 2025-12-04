@@ -6,7 +6,7 @@
   --text:#e7e7ea;
   --line:#2a2a2d;
 
-  --brand:#4b5563;   /* cinza médio */
+  --brand:#1d1a44;
   --brand-2:#9ca3af; /* cinza mais claro */
 }
 
@@ -1065,4 +1065,119 @@ body { margin:0; background:var(--bg); color:var(--text);
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   CORREÇÃO DE LAYOUT - TABELA DE ESTOQUE (Espaçamento)
+   ============================================================ */
+
+/* 1. Define as colunas corretas para bater com o React */
+.t-prod-head, 
+.t-prod-row {
+  display: grid !important;
+  /* Colunas: 
+     1. Nome (Largo - 2fr)
+     2. Tipo (Médio - 1.2fr)
+     3. Lote (Médio - 1.2fr)
+     4. Saldo (Curto - 0.8fr)
+     5. Un (Mini - 0.5fr)
+  */
+  grid-template-columns: 1.5fr 1.2fr 1.2fr 0.8fr 0.8fr !important;
+  
+  /* Aumenta o espaço entre as colunas (desgrudar) */
+  gap: 20px !important; 
+  
+  /* Alinhamento vertical centralizado */
+  align-items: center !important;
+  
+  /* Altura e espaçamento interno da linha */
+  min-height: 50px !important;
+  padding: 0 16px !important;
+}
+
+/* 2. Tratamento de Texto (Para não quebrar linha e encavalar) */
+.t-prod-row span {
+  white-space: nowrap !important;      /* Força o texto em uma linha só */
+  overflow: hidden !important;         /* Esconde o que passar */
+  text-overflow: ellipsis !important;  /* Coloca "..." se for muito grande */
+  display: block !important;
+}
+
+/* 3. Ajuste específico para o Saldo (Número) */
+.t-prod-row span:nth-child(4) {
+  font-variant-numeric: tabular-nums; /* Melhora alinhamento de números */
+}
+
+/* 4. Ajuste Visual da Linha (Cor e Borda) */
+.t-prod-row {
+  background-color: var(--bg-2); /* Usa a variável do tema (ou #141416) */
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 8px; /* Espaço entre uma linha e outra */
+}
+
+
+/* ============================================================
+   CORREÇÃO FINAL: HOME (KPIs) E TABELAS NO TEMA CLARO
+   ============================================================ */
+
+/* 1. KPIs da Home (Dashboard) */
+.theme-light .kpi-card {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #1f2937 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.theme-light .kpi-value {
+  color: #111827 !important; /* Preto forte para o número */
+}
+
+.theme-light .kpi-label {
+  color: #6b7280 !important; /* Cinza médio para o título */
+}
+
+/* 2. Atalhos da Home (Shortcuts) */
+.theme-light .home-shortcuts {
+  background: linear-gradient(135deg, #f9fafb, #f3f4f6) !important;
+  border-color: #d1d5db !important;
+}
+
+.theme-light .shortcut-text {
+  color: #4b5563 !important;
+}
+
+/* 3. Tabela de Estoque e Listas (Linhas) */
+.theme-light .t-prod-row, 
+.theme-light .t-row {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border-top: 1px solid #e5e7eb !important;
+  border-right: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+/* Títulos das Tabelas */
+.theme-light .t-prod-head span,
+.theme-light .t-head span {
+  color: #6b7280 !important;
+  font-weight: 600;
+}
+
+/* 4. Título de Boas-vindas na Home */
+.theme-light .home-title {
+  background: linear-gradient(90deg, #1f2937, #4b5563) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.theme-light .home-subtitle {
+  color: #6b7280 !important;
+}
+
+/* 5. Inputs de Pesquisa na Barra Superior (Se houver) */
+.theme-light .search-input {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #1f2937 !important;
 }
