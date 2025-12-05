@@ -1,5 +1,7 @@
 import React from "react";
 import "./dashboard.css";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const MENU_ITEMS = [
   { key: "produtos",       title: "Produtos",          sub: "Cadastros • Produtos" },
@@ -47,6 +49,9 @@ const RAIL = [
 ];
 
 export default function DashboardProto() {
+  const nav = useNavigate();
+  const { logout } = useAuth();
+
   const [theme, setTheme] = React.useState(() => {
     try {
       return localStorage.getItem("ps_theme") || "dark";
@@ -69,6 +74,13 @@ export default function DashboardProto() {
 
   const currentLabel = (RAIL.find(r => r.key === selectedRail)?.label) || "";
 
+  function handleLogout() {
+    if (window.confirm("Tem certeza que deseja desconectar do sistema?")) {
+      logout(); // Limpa contexto/storage
+      nav("/"); // Redireciona para login
+    }
+  }
+
   return (
     <div className={`dash-root theme-${theme}`}>
       {/* Topbar */}
@@ -83,6 +95,17 @@ export default function DashboardProto() {
           <div className="env-wrapper">
             <div className="env-chip">Filial: MATRIZ</div>
           </div>
+        </div>
+
+        <div className="topbar-right">
+            <button 
+                className="icon-btn" 
+                onClick={handleLogout}
+                title="Sair do Sistema"
+                style={{ color: '#ffffffff', borderColor: '#5532b4ff' }} // Vermelho para destaque
+            >
+                🚪 Sair
+            </button>
         </div>
       </header>
 

@@ -35,7 +35,7 @@ body { margin:0; background:var(--bg); color:var(--text);
 
 
 .topbar-right { display:flex; align-items:center; gap:8px; }
-.icon-btn { background:#0d0e10; color:var(--text); border:1px solid var(--line); padding:8px;
+.icon-btn { background:var(--brand); color:var(--text); border:1px solid var(--line); padding:8px;
   border-radius:10px; cursor:pointer; }
 .icon-btn:hover { background:#121317; }
 .user-pill { background: var(--brand); color: #fff; border-radius: 999px; padding: 6px 10px; font-weight: 700; cursor:pointer; }
@@ -1189,5 +1189,4 @@ body { margin:0; background:var(--bg); color:var(--text);
 /* Quando estiver no tema claro, inverte as cores do logo */
 .theme-light .brand-logo {
   filter: invert(1) hue-rotate(180deg);
-  
 }
