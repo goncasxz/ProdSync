@@ -1,15 +1,24 @@
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Login from "./pages/Login";
 import DashboardProto from "./pages/DashboardProto";
+import { api } from "./services/api";
 
-// Rota privada usando Outlet
+function ApiDocsRedirect() {
+  useEffect(() => {
+    const backendUrl = api.defaults.baseURL;
+    window.location.href = `${backendUrl}/api-docs`;
+  }, []);
+
+  return <div style={{color:'#fff', padding: 20}}>Redirecionando para documentação...</div>;
+}
+
 function PrivateRoute() {
   const { user } = useAuth();
   return user ? <Outlet /> : <Navigate to="/" replace />;
 }
 
-// Rota pública: se já estiver logado, redireciona para /painel
 function PublicRoute({ children }) {
   const { user } = useAuth();
   return user ? <Navigate to="/painel" replace /> : children;
@@ -20,7 +29,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Login como página pública */}
+          <Route path="/api-docs" element={<ApiDocsRedirect />} />
           <Route
             path="/"
             element={
@@ -30,13 +39,10 @@ export default function App() {
             }
           />
 
-          {/* Todas as rotas privadas */}
           <Route element={<PrivateRoute />}>
             <Route path="/painel" element={<DashboardProto />} />
-            {/* Futuras rotas privadas podem ser adicionadas aqui */}
           </Route>
 
-          {/* Qualquer rota desconhecida volta pro login */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
